@@ -1,0 +1,13 @@
+[package]
+name = "rustpass"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ratatui = "0.29.0"       # Fork of `tui-rs`
+crossterm = "0.27"     # Terminal event handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"  # Required for JSON serialization/deserialization
+env_logger = "0.11.6"
+log = "0.4.25"
+chrono = "0.4.39"

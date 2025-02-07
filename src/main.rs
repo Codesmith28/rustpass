@@ -1,0 +1,51 @@
+use rustpass::tui;
+use rustpass::utils;
+
+use log::debug;
+use log::error;
+
+use tui::app::App;
+use tui::events::EventHandler;
+use tui::keybindings::KeyBindings;
+
+use tui::data::load_passwords;
+use tui::layout::restore_terminal;
+use tui::layout::setup_terminal;
+use tui::widgets::draw_ui;
+
+use utils::logger::init_logger;
+
+fn main() -> std::io::Result<()> {
+    init_logger();
+
+    let passwords = match load_passwords("./passwords.json") {
+        Ok(passwords) => {
+            debug!("Successfully loaded password file");
+            debug!("Number of passwords loaded: {}", passwords.len());
+            passwords
+        }
+        Err(e) => {
+            error!("Failed to load passwords: {}", e);
+            Vec::new() // Return empty vec on error
+        }
+    };
+
+    // Setup TUI
+    let mut terminal = setup_terminal()?;
+    let mut app = App::new();
+    let mut events = EventHandler::new();
+    let keys = KeyBindings::new();
+
+    while app.running {
+        terminal.draw(|f| draw_ui(f, &app))?;
+
+        if let Some(key) = events.next_event() {
+            if key == keys.quit {
+                app.quit();
+                restore_terminal()?;
+            }
+        }
+    }
+
+    Ok(())
+}
