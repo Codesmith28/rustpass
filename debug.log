@@ -1,4 +1,2 @@
-[2025-02-07 08:56:36] [DEBUG] Logger initialized
-[2025-02-07 08:56:36] [DEBUG] []
-[2025-02-07 08:56:36] [DEBUG] Successfully loaded password file
-[2025-02-07 08:56:36] [DEBUG] Number of passwords loaded: 0
+[2025-02-07 11:06:15] [DEBUG] Logger initialized
+[2025-02-07 11:06:15] [DEBUG] [PasswordEntry { name: "GitHub", id: "gh-123", password: "supersecurepassword", metadata: Metadata { url: Some("https://github.com"), notes: Some("Work account") } }, PasswordEntry { name: "Google", id: "google-456", password: "anothersecurepassword", metadata: Metadata { url: Some("https://google.com"), notes: None } }]

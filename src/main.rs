@@ -1,7 +1,6 @@
 use rustpass::tui;
 use rustpass::utils;
 
-use log::debug;
 use log::error;
 
 use tui::app::App;
@@ -19,8 +18,8 @@ fn main() -> std::io::Result<()> {
 
     let passwords = match load_passwords("./passwords.json") {
         Ok(passwords) => {
-            debug!("Successfully loaded password file");
-            debug!("Number of passwords loaded: {}", passwords.len());
+            // debug!("Successfully loaded password file");
+            // debug!("Number of passwords loaded: {}", passwords.len());
             passwords
         }
         Err(e) => {
