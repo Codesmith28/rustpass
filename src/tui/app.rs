@@ -34,14 +34,24 @@ impl App {
     }
 
     pub fn move_selection_up(&mut self) {
-        if self.selected_index > 0 {
-            self.selected_index -= 1;
+        let len = self.filtered_passwords.len();
+        if len > 0 {
+            self.selected_index = if self.selected_index == 0 {
+                len - 1
+            } else {
+                self.selected_index - 1
+            };
         }
     }
 
     pub fn move_selection_down(&mut self) {
-        if self.selected_index < self.filtered_passwords.len().saturating_sub(1) {
-            self.selected_index += 1;
+        let len = self.filtered_passwords.len();
+        if len > 0 {
+            self.selected_index = if self.selected_index >= len - 1 {
+                0
+            } else {
+                self.selected_index + 1
+            };
         }
     }
 

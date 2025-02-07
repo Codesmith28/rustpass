@@ -34,8 +34,6 @@ pub fn render_ui(f: &mut Frame, app: &App) {
     // Render left pane widgets
     render_search_box(f, app, left_chunks[0]);
     render_password_list(f, app, left_chunks[1]);
-
-    // Render preview pane using the entire height of the right pane
     render_preview(f, app, main_chunks[1]);
 
     // Overlay help panel if enabled (centers itself over the whole area)
@@ -79,12 +77,25 @@ fn render_search_box(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn render_password_list(f: &mut Frame, app: &App, area: Rect) {
+    // Clear the area before re-rendering the list
+    f.render_widget(Clear, area);
+
     let items: Vec<ListItem> = if app.filtered_passwords.is_empty() {
-        vec![ListItem::new("No passwords loaded")]
+        vec![ListItem::new("  No passwords loaded")]
     } else {
         app.filtered_passwords
             .iter()
-            .map(|entry| ListItem::new(format!("{} | {}", entry.name, entry.id)))
+            .enumerate()
+            .map(|(i, entry)| {
+                let prefix = if i == app.selected_index { "> " } else { "  " };
+                let content = format!("{}{} | {}", prefix, entry.name, entry.id);
+                let item = ListItem::new(content);
+                if i == app.selected_index {
+                    item.style(Style::default().fg(Color::Yellow))
+                } else {
+                    item
+                }
+            })
             .collect()
     };
 
@@ -94,16 +105,15 @@ fn render_password_list(f: &mut Frame, app: &App, area: Rect) {
             .border_type(BorderType::Rounded)
             .title(" Passwords "),
     );
-
     f.render_widget(list, area);
 }
-
 fn render_preview(f: &mut Frame, app: &App, area: Rect) {
     let details = if let Some(selected) = app.selected_password() {
         format!(
-            "Name: {}\nID: {}\nPassword: ****\nURL: {}\nNotes: {}",
+            "Name: {}\nID: {}\nPassword: {}\nURL: {}\nNotes: {}",
             selected.name,
             selected.id,
+            selected.password,
             selected.metadata.url.as_deref().unwrap_or("N/A"),
             selected.metadata.notes.as_deref().unwrap_or("None")
         )

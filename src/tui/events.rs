@@ -33,10 +33,20 @@ impl EventHandler {
             KeyAction::MoveDown => app.move_selection_down(),
             KeyAction::ToggleHelp => app.toggle_help(),
             KeyAction::SearchChar(c) => {
-                app.search_input.push(c);
+                app.update_search(c);
             }
             KeyAction::Backspace => {
                 app.search_input.pop();
+                // Re-filter after deletion:
+                app.filtered_passwords = app
+                    .all_passwords
+                    .iter()
+                    .filter(|p| {
+                        p.name.contains(&app.search_input) || p.id.contains(&app.search_input)
+                    })
+                    .cloned()
+                    .collect();
+                app.selected_index = 0;
             }
         }
     }
