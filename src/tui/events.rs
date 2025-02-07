@@ -3,6 +3,8 @@ use crate::tui::keybindings::{KeyAction, KeyBindings};
 use crossterm::event::{self, KeyEvent};
 use std::time::Duration;
 
+use super::app::fuzzy_match;
+
 pub struct EventHandler {
     bindings: KeyBindings,
 }
@@ -37,12 +39,15 @@ impl EventHandler {
             }
             KeyAction::Backspace => {
                 app.search_input.pop();
-                // Re-filter after deletion:
+                // Re-filter using case insensitive fuzzy matching:
+                let search = app.search_input.to_lowercase();
                 app.filtered_passwords = app
                     .all_passwords
                     .iter()
                     .filter(|p| {
-                        p.name.contains(&app.search_input) || p.id.contains(&app.search_input)
+                        let name = p.name.to_lowercase();
+                        let id = p.id.to_lowercase();
+                        fuzzy_match(&search, &name) || fuzzy_match(&search, &id)
                     })
                     .cloned()
                     .collect();

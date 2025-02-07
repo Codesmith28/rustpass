@@ -1,6 +1,24 @@
 use super::layout::restore_terminal;
 use crate::models::data::PasswordEntry;
 
+pub fn fuzzy_match(query: &str, target: &str) -> bool {
+    if query.is_empty() {
+        return true;
+    }
+    let mut query_chars = query.chars();
+    let mut current = query_chars.next().unwrap();
+    for c in target.chars() {
+        if c == current {
+            if let Some(next) = query_chars.next() {
+                current = next;
+            } else {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 pub struct App {
     pub running: bool,
     pub search_input: String,
@@ -22,15 +40,24 @@ impl App {
         }
     }
 
-    pub fn update_search(&mut self, input: char) {
-        self.search_input.push(input);
+    pub fn update_search(&mut self, c: char) {
+        self.search_input.push(c);
+        self.filter_passwords();
+    }
+
+    pub fn filter_passwords(&mut self) {
+        let search = self.search_input.to_lowercase();
         self.filtered_passwords = self
             .all_passwords
             .iter()
-            .filter(|p| p.name.contains(&self.search_input) || p.id.contains(&self.search_input))
+            .filter(|p| {
+                let name = p.name.to_lowercase();
+                let id = p.id.to_lowercase();
+                fuzzy_match(&search, &name) || fuzzy_match(&search, &id)
+            })
             .cloned()
             .collect();
-        self.selected_index = 0; // Reset selection on search update
+        self.selected_index = 0;
     }
 
     pub fn move_selection_up(&mut self) {
