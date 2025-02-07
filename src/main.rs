@@ -9,9 +9,8 @@ use tui::events::EventHandler;
 use tui::keybindings::KeyBindings;
 
 use tui::data::load_passwords;
-use tui::layout::restore_terminal;
 use tui::layout::setup_terminal;
-use tui::widgets::draw_ui;
+use tui::widgets::render_ui;
 
 use utils::logger::init_logger;
 
@@ -32,17 +31,16 @@ fn main() -> std::io::Result<()> {
 
     // Setup TUI
     let mut terminal = setup_terminal()?;
-    let mut app = App::new();
+    let mut app = App::new(passwords);
     let mut events = EventHandler::new();
     let keys = KeyBindings::new();
 
     while app.running {
-        terminal.draw(|f| draw_ui(f, &app))?;
+        terminal.draw(|f| render_ui(f, &app))?;
 
-        if let Some(key) = events.next_event() {
-            if key == keys.quit {
+        if let Some(key) = events.next_event(&mut app) {
+            if key.code == keys.quit {
                 app.quit();
-                restore_terminal()?;
             }
         }
     }
