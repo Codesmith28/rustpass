@@ -39,7 +39,7 @@ fn main() -> std::io::Result<()> {
         terminal.draw(|f| render_ui(f, &app))?;
 
         if let Some(key) = events.next_event(&mut app) {
-            if key.code == keys.quit {
+            if key == keys.quit {
                 app.quit();
             }
         }
