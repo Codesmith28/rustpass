@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug)]
-pub enum KeyAction {
+pub enum AppEvent {
     Quit,
     MoveUp,
     MoveDown,
@@ -39,43 +39,43 @@ impl KeyBindings {
         }
     }
 
-    pub fn match_action(&self, key: KeyEvent) -> Option<KeyAction> {
+    pub fn match_action(&self, key: KeyEvent) -> Option<AppEvent> {
         // Handle Escape key specially
         if key.code == KeyCode::Esc {
-            return Some(KeyAction::CloseModal);
+            return Some(AppEvent::CloseModal);
         }
 
         // Backspace is always handled.
         if key.code == KeyCode::Backspace {
-            return Some(KeyAction::Backspace);
+            return Some(AppEvent::Backspace);
         }
 
         // Handle Alt shortcuts:
         if key.modifiers.contains(KeyModifiers::ALT) {
             match key.code {
-                KeyCode::Char('c') => return Some(KeyAction::CopyPassword),
-                KeyCode::Char('e') => return Some(KeyAction::EditEntry),
-                KeyCode::Char('d') => return Some(KeyAction::DeleteEntry),
-                KeyCode::Char('n') => return Some(KeyAction::CreateEntry),
+                KeyCode::Char('c') => return Some(AppEvent::CopyPassword),
+                KeyCode::Char('e') => return Some(AppEvent::EditEntry),
+                KeyCode::Char('d') => return Some(AppEvent::DeleteEntry),
+                KeyCode::Char('n') => return Some(AppEvent::CreateEntry),
                 _ => {}
             }
         }
 
         // Handle Tab for multi-selection.
         if key.code == KeyCode::Tab {
-            return Some(KeyAction::MultiSelect);
+            return Some(AppEvent::MultiSelect);
         }
         if key == self.quit {
-            return Some(KeyAction::Quit);
+            return Some(AppEvent::Quit);
         }
         if key == self.move_up {
-            return Some(KeyAction::MoveUp);
+            return Some(AppEvent::MoveUp);
         }
         if key == self.move_down {
-            return Some(KeyAction::MoveDown);
+            return Some(AppEvent::MoveDown);
         }
         if key == self.toggle_help {
-            return Some(KeyAction::ToggleHelp);
+            return Some(AppEvent::ToggleHelp);
         }
 
         // For character input, ignore CTRL combinations (except ALT already handled).
@@ -88,7 +88,7 @@ impl KeyBindings {
             if modifiers.contains(KeyModifiers::CONTROL) {
                 None
             } else {
-                Some(KeyAction::SearchChar(c))
+                Some(AppEvent::SearchChar(c))
             }
         } else {
             None

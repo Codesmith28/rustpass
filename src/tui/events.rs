@@ -1,5 +1,5 @@
 use crate::tui::app::App;
-use crate::tui::keybindings::{KeyAction, KeyBindings};
+use crate::tui::keybindings::{AppEvent, KeyBindings};
 use crossterm::event::{self, KeyCode, KeyEvent};
 use std::time::Duration;
 
@@ -44,16 +44,16 @@ impl EventHandler {
         None
     }
 
-    fn handle_action(&self, action: KeyAction, app: &mut App) {
+    fn handle_action(&self, action: AppEvent, app: &mut App) {
         match action {
-            KeyAction::Quit => app.quit(),
-            KeyAction::MoveUp => app.move_selection_up(),
-            KeyAction::MoveDown => app.move_selection_down(),
-            KeyAction::ToggleHelp => app.toggle_help(),
-            KeyAction::SearchChar(c) => {
+            AppEvent::Quit => app.quit(),
+            AppEvent::MoveUp => app.move_selection_up(),
+            AppEvent::MoveDown => app.move_selection_down(),
+            AppEvent::ToggleHelp => app.toggle_help(),
+            AppEvent::SearchChar(c) => {
                 app.update_search(c);
             }
-            KeyAction::Backspace => {
+            AppEvent::Backspace => {
                 app.search_input.pop();
                 let search = app.search_input.to_lowercase();
                 app.filtered_passwords = app
@@ -68,10 +68,10 @@ impl EventHandler {
                     .collect();
                 app.selected_index = 0;
             }
-            KeyAction::CopyPassword => {
+            AppEvent::CopyPassword => {
                 app.copy_password();
             }
-            KeyAction::EditEntry => {
+            AppEvent::EditEntry => {
                 if let Some(entry) = app.selected_password() {
                     app.open_modal(Modal::new(
                         ModalType::Edit,
@@ -81,7 +81,7 @@ impl EventHandler {
                     ));
                 }
             }
-            KeyAction::DeleteEntry => {
+            AppEvent::DeleteEntry => {
                 if app.multi_selected.is_empty() {
                     if let Some(entry) = app.selected_password() {
                         app.open_modal(Modal::new(
@@ -95,7 +95,7 @@ impl EventHandler {
                     app.delete_selected_entries();
                 }
             }
-            KeyAction::CreateEntry => {
+            AppEvent::CreateEntry => {
                 app.open_modal(Modal::new(
                     ModalType::Create,
                     "Create Entry".into(),
@@ -103,10 +103,10 @@ impl EventHandler {
                     None,
                 ));
             }
-            KeyAction::MultiSelect => {
+            AppEvent::MultiSelect => {
                 app.toggle_multi_select();
             }
-            KeyAction::CloseModal => {
+            AppEvent::CloseModal => {
                 if app.modal.is_some() {
                     app.close_modal();
                 } else {
