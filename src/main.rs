@@ -5,7 +5,6 @@ use log::error;
 
 use tui::app::App;
 use tui::events::EventHandler;
-use tui::keybindings::KeyBindings;
 
 use tui::data::load_passwords;
 use tui::layout::setup_terminal;
@@ -30,18 +29,14 @@ fn main() -> std::io::Result<()> {
 
     // Setup TUI
     let mut terminal = setup_terminal()?;
+
     let mut app = App::new(passwords);
     let mut events = EventHandler::new();
-    let keys = KeyBindings::new();
 
     while app.running {
         terminal.draw(|f| render_ui(f, &app))?;
 
-        if let Some(key) = events.next_event(&mut app) {
-            if key == keys.quit {
-                app.quit();
-            }
-        }
+        if let Some(_key) = events.next_event(&mut app) {}
     }
 
     Ok(())

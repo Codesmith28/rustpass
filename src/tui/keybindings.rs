@@ -8,6 +8,12 @@ pub enum KeyAction {
     ToggleHelp,
     SearchChar(char),
     Backspace,
+    CopyPassword, // Alt+c
+    EditEntry,    // Alt+e
+    DeleteEntry,  // Alt+d
+    CreateEntry,  // Alt+n
+    MultiSelect,  // Tab: mark current & move to next
+    CloseModal,   // Esc: close modal
 }
 
 impl Default for KeyBindings {
@@ -34,9 +40,30 @@ impl KeyBindings {
     }
 
     pub fn match_action(&self, key: KeyEvent) -> Option<KeyAction> {
-        // Always return Backspace if the key's code is Backspace.
+        // Handle Escape key specially
+        if key.code == KeyCode::Esc {
+            return Some(KeyAction::CloseModal);
+        }
+
+        // Backspace is always handled.
         if key.code == KeyCode::Backspace {
             return Some(KeyAction::Backspace);
+        }
+
+        // Handle Alt shortcuts:
+        if key.modifiers.contains(KeyModifiers::ALT) {
+            match key.code {
+                KeyCode::Char('c') => return Some(KeyAction::CopyPassword),
+                KeyCode::Char('e') => return Some(KeyAction::EditEntry),
+                KeyCode::Char('d') => return Some(KeyAction::DeleteEntry),
+                KeyCode::Char('n') => return Some(KeyAction::CreateEntry),
+                _ => {}
+            }
+        }
+
+        // Handle Tab for multi-selection.
+        if key.code == KeyCode::Tab {
+            return Some(KeyAction::MultiSelect);
         }
         if key == self.quit {
             return Some(KeyAction::Quit);
@@ -47,11 +74,11 @@ impl KeyBindings {
         if key == self.move_down {
             return Some(KeyAction::MoveDown);
         }
-        // Only handle CTRL+h for help.
         if key == self.toggle_help {
             return Some(KeyAction::ToggleHelp);
         }
-        // For character input, ignore CTRL combinations except CTRL+h.
+
+        // For character input, ignore CTRL combinations (except ALT already handled).
         if let KeyEvent {
             code: KeyCode::Char(c),
             modifiers,
@@ -59,7 +86,6 @@ impl KeyBindings {
         } = key
         {
             if modifiers.contains(KeyModifiers::CONTROL) {
-                // Only CTRL+h is valid for toggle help (handled above).
                 None
             } else {
                 Some(KeyAction::SearchChar(c))
