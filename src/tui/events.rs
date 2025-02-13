@@ -1,9 +1,11 @@
 use crate::tui::app::App;
 use crate::tui::keybindings::{AppEvent, KeyBindings};
 use crossterm::event::{self, KeyCode, KeyEvent};
-use std::time::Duration;
+use ratatui::style::Color;
+use std::time::{Duration, Instant};
 
 use super::app::fuzzy_match;
+use super::widgets::notification::Notification;
 use super::widgets::{modal::ConfirmationType, modal::InputType, modal::Modal};
 
 pub struct EventHandler {
@@ -75,7 +77,14 @@ impl EventHandler {
                 app.copy_password();
             }
             AppEvent::EditEntry => {
-                if let Some(entry) = app.selected_password() {
+                if !app.multi_selected.is_empty() {
+                    app.notification = Some(Notification {
+                        header: "Error".into(),
+                        message: "Please select one entry only".into(),
+                        color: Color::Red,
+                        created: Instant::now(),
+                    });
+                } else if let Some(entry) = app.selected_password() {
                     app.open_modal(Modal::new_input(
                         InputType::Edit,
                         " Edit Entry ".into(),
