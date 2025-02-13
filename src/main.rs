@@ -8,7 +8,7 @@ use tui::events::EventHandler;
 
 use tui::data::load_passwords;
 use tui::layout::setup_terminal;
-use tui::widgets::render_ui;
+use tui::widgets::ui::render_ui;
 
 use utils::logger::init_logger;
 

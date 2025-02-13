@@ -4,9 +4,7 @@ use std::time::Instant;
 
 // Import Notification from widgets (adjust the module path as needed)
 use crate::tui::layout::restore_terminal;
-use crate::tui::widgets::Notification;
-
-use super::widgets::{Modal, ModalType};
+use crate::tui::widgets::{modal::Modal, modal::ModalType, notification::Notification};
 
 pub fn fuzzy_match(query: &str, target: &str) -> bool {
     if query.is_empty() {

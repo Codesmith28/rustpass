@@ -4,7 +4,7 @@ use crossterm::event::{self, KeyCode, KeyEvent};
 use std::time::Duration;
 
 use super::app::fuzzy_match;
-use super::widgets::{Modal, ModalType};
+use super::widgets::{modal::Modal, modal::ModalType};
 
 pub struct EventHandler {
     bindings: KeyBindings,
