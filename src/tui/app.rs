@@ -1,10 +1,13 @@
 use crate::models::data::PasswordEntry;
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::style::Color;
 use std::time::Instant;
 
 // Import Notification from widgets (adjust the module path as needed)
 use crate::tui::layout::restore_terminal;
 use crate::tui::widgets::{modal::Modal, modal::ModalType, notification::Notification};
+
+use super::widgets::modal::{ConfirmationType, InputType};
 
 pub fn fuzzy_match(query: &str, target: &str) -> bool {
     if query.is_empty() {
@@ -161,32 +164,30 @@ impl App {
         self.modal = None;
     }
 
+    pub fn handle_modal_input(&mut self, key: KeyEvent) {
+        if let Some(modal) = &mut self.modal {
+            match key.code {
+                KeyCode::Tab => {
+                    if key.modifiers.contains(KeyModifiers::SHIFT) {
+                        modal.prev_field();
+                    } else {
+                        modal.next_field();
+                    }
+                }
+                KeyCode::Char(c) => modal.handle_input(c),
+                KeyCode::Backspace => modal.handle_backspace(),
+                _ => {}
+            }
+        }
+    }
+
     pub fn confirm_modal(&mut self) {
         if let Some(modal) = self.modal.take() {
             match modal.typ {
-                ModalType::Edit => {
-                    if let Some(entry) = &modal.entry {
-                        // --- update entry logic ---
-                        self.notification = Some(Notification {
-                            header: "Updated".into(),
-                            message: format!("{} updated!", entry.name),
-                            color: Color::Yellow,
-                            created: Instant::now(),
-                        });
-                    }
-                }
-                ModalType::Create => {
-                    // --- cretae new entry logic ---
-                    self.notification = Some(Notification {
-                        header: "Created".into(),
-                        message: "Entry created!".into(),
-                        color: Color::Green,
-                        created: Instant::now(),
-                    });
-                }
-                ModalType::Delete => {
-                    if let Some(entry) = &modal.entry {
-                        // --- delete entry logic ---
+                ModalType::Confirm(ConfirmationType::Delete) => {
+                    if let Some(entry) = modal.entry {
+                        self.all_passwords.retain(|p| p.id != entry.id);
+                        self.filter_passwords();
                         self.notification = Some(Notification {
                             header: "Deleted".into(),
                             message: format!("{} deleted!", entry.name),
@@ -195,8 +196,40 @@ impl App {
                         });
                     }
                 }
+                ModalType::Input(InputType::Edit) => {
+                    if let Some(new_entry) = modal.to_password_entry() {
+                        if let Some(old_entry) = modal.entry {
+                            // Update existing entry
+                            if let Some(entry) =
+                                self.all_passwords.iter_mut().find(|p| p.id == old_entry.id)
+                            {
+                                let name = new_entry.name.clone(); // Clone name before move
+                                *entry = new_entry;
+                                self.filter_passwords();
+                                self.notification = Some(Notification {
+                                    header: "Updated".into(),
+                                    message: format!("{} updated!", name),
+                                    color: Color::Yellow,
+                                    created: Instant::now(),
+                                });
+                            }
+                        }
+                    }
+                }
+                ModalType::Input(InputType::Create) => {
+                    if let Some(new_entry) = modal.to_password_entry() {
+                        self.all_passwords.push(new_entry.clone());
+                        self.filter_passwords();
+                        self.notification = Some(Notification {
+                            header: "Created".into(),
+                            message: format!("{} created!", new_entry.name),
+                            color: Color::Green,
+                            created: Instant::now(),
+                        });
+                    }
+                }
             }
-            self.close_modal();
         }
+        self.close_modal();
     }
 }

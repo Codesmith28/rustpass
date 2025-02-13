@@ -50,6 +50,11 @@ impl KeyBindings {
             return Some(AppEvent::Backspace);
         }
 
+        // Handle Tab for multi-selection only when no modal is active
+        if key.code == KeyCode::Tab && !key.modifiers.contains(KeyModifiers::SHIFT) {
+            return Some(AppEvent::MultiSelect);
+        }
+
         // Handle Alt shortcuts:
         if key.modifiers.contains(KeyModifiers::ALT) {
             match key.code {
@@ -61,10 +66,6 @@ impl KeyBindings {
             }
         }
 
-        // Handle Tab for multi-selection.
-        if key.code == KeyCode::Tab {
-            return Some(AppEvent::MultiSelect);
-        }
         if key == self.quit {
             return Some(AppEvent::Quit);
         }

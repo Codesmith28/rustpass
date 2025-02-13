@@ -4,7 +4,7 @@ use crossterm::event::{self, KeyCode, KeyEvent};
 use std::time::Duration;
 
 use super::app::fuzzy_match;
-use super::widgets::{modal::Modal, modal::ModalType};
+use super::widgets::{modal::ConfirmationType, modal::InputType, modal::Modal};
 
 pub struct EventHandler {
     bindings: KeyBindings,
@@ -31,7 +31,10 @@ impl EventHandler {
                             app.close_modal();
                             return Some(key);
                         }
-                        _ => return Some(key),
+                        _ => {
+                            app.handle_modal_input(key);
+                            return Some(key);
+                        }
                     }
                 }
 
@@ -73,10 +76,9 @@ impl EventHandler {
             }
             AppEvent::EditEntry => {
                 if let Some(entry) = app.selected_password() {
-                    app.open_modal(Modal::new(
-                        ModalType::Edit,
-                        "Edit Entry".into(),
-                        format!("Edit entry: {}", entry.name),
+                    app.open_modal(Modal::new_input(
+                        InputType::Edit,
+                        " Edit Entry ".into(),
                         Some(entry.clone()),
                     ));
                 }
@@ -84,9 +86,9 @@ impl EventHandler {
             AppEvent::DeleteEntry => {
                 if app.multi_selected.is_empty() {
                     if let Some(entry) = app.selected_password() {
-                        app.open_modal(Modal::new(
-                            ModalType::Delete,
-                            "Confirm Delete".into(),
+                        app.open_modal(Modal::new_confirmation(
+                            ConfirmationType::Delete,
+                            " Confirm Delete ".into(),
                             format!("Are you sure you want to delete {}?", entry.name),
                             Some(entry.clone()),
                         ));
@@ -96,10 +98,9 @@ impl EventHandler {
                 }
             }
             AppEvent::CreateEntry => {
-                app.open_modal(Modal::new(
-                    ModalType::Create,
-                    "Create Entry".into(),
-                    "Create a new password entry".into(),
+                app.open_modal(Modal::new_input(
+                    InputType::Create,
+                    " Create Entry ".into(),
                     None,
                 ));
             }
