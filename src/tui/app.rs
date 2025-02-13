@@ -10,6 +10,8 @@ use crate::tui::widgets::{modal::Modal, modal::ModalType, notification::Notifica
 use super::data::save_passwords;
 use super::widgets::modal::{ConfirmationType, InputType};
 
+use arboard::Clipboard;
+
 pub fn fuzzy_match(query: &str, target: &str) -> bool {
     if query.is_empty() {
         return true;
@@ -118,7 +120,29 @@ impl App {
     // Copies the password of the current selection to clipboard.
     pub fn copy_password(&mut self) {
         if let Some(entry) = self.selected_password() {
-            // Copy to clipboard logic here...
+            let mut clipboard = match Clipboard::new() {
+                Ok(ctx) => ctx,
+                Err(e) => {
+                    self.notification = Some(Notification {
+                        header: "Error".into(),
+                        message: format!("Could not access clipboard: {}", e),
+                        color: Color::Red,
+                        created: Instant::now(),
+                    });
+                    return;
+                }
+            };
+
+            if let Err(e) = clipboard.set_text(entry.password.clone()) {
+                self.notification = Some(Notification {
+                    header: "Error".into(),
+                    message: format!("Failed to copy to clipboard: {}", e),
+                    color: Color::Red,
+                    created: Instant::now(),
+                });
+                return;
+            }
+
             self.notification = Some(Notification {
                 header: "Copied".into(),
                 message: format!("{} password copied!", entry.name),
