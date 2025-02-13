@@ -1,10 +1,11 @@
 use crate::tui::app::App;
 use crate::tui::keybindings::{AppEvent, KeyBindings};
+use crate::utils::fuzzy_finder::fuzzy_match;
+
 use crossterm::event::{self, KeyCode, KeyEvent};
 use ratatui::style::Color;
 use std::time::{Duration, Instant};
 
-use super::app::fuzzy_match;
 use super::widgets::notification::Notification;
 use super::widgets::{modal::ConfirmationType, modal::InputType, modal::Modal};
 

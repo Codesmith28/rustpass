@@ -1,4 +1,5 @@
 use crate::models::data::{Metadata, PasswordEntry};
+use crate::utils::fuzzy_finder::fuzzy_match;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::style::Color;
 use std::time::Instant;
@@ -11,24 +12,6 @@ use super::data::save_passwords;
 use super::widgets::modal::{ConfirmationType, InputType};
 
 use arboard::Clipboard;
-
-pub fn fuzzy_match(query: &str, target: &str) -> bool {
-    if query.is_empty() {
-        return true;
-    }
-    let mut query_chars = query.chars();
-    let mut current = query_chars.next().unwrap();
-    for c in target.chars() {
-        if c == current {
-            if let Some(next) = query_chars.next() {
-                current = next;
-            } else {
-                return true;
-            }
-        }
-    }
-    false
-}
 
 pub struct App {
     pub running: bool,
