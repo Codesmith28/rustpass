@@ -152,25 +152,6 @@ impl App {
         }
     }
 
-    // Deletes entries that were multi-selected.
-    pub fn delete_selected_entries(&mut self) {
-        // Remove entries in multi_selected (assuming indices are sorted in ascending order)
-        self.multi_selected.sort();
-        self.multi_selected.reverse();
-        for idx in &self.multi_selected {
-            if let Some(entry) = self.filtered_passwords.get(*idx) {
-                self.all_passwords.retain(|p| p.id != entry.id);
-            }
-        }
-        self.filter_passwords();
-        self.notification = Some(Notification {
-            header: "Deleted".into(),
-            message: "Selected entries deleted!".into(),
-            color: Color::Red,
-            created: Instant::now(),
-        });
-    }
-
     // Toggles multi-selection for the current entry and moves to the next one.
     pub fn toggle_multi_select(&mut self) {
         if self.filtered_passwords.get(self.selected_index).is_some() {
@@ -230,6 +211,23 @@ impl App {
                             });
                         }
                     }
+                }
+                ModalType::Confirm(ConfirmationType::BulkDelete) => {
+                    // Remove entries in multi_selected (assuming indices are sorted in ascending order)
+                    self.multi_selected.sort();
+                    self.multi_selected.reverse();
+                    for idx in &self.multi_selected {
+                        if let Some(entry) = self.filtered_passwords.get(*idx) {
+                            self.all_passwords.retain(|p| p.id != entry.id);
+                        }
+                    }
+                    self.filter_passwords();
+                    self.notification = Some(Notification {
+                        header: "Deleted".into(),
+                        message: "Selected entries deleted!".into(),
+                        color: Color::Red,
+                        created: Instant::now(),
+                    });
                 }
                 ModalType::Input(input_type) => {
                     let name = modal.input_fields[0].value.clone();

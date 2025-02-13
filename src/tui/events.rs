@@ -83,7 +83,7 @@ impl EventHandler {
                     ));
                 }
             }
-            AppEvent::DeleteEntry => {
+            AppEvent::DeleteEntry | AppEvent::BulkDelete => {
                 if app.multi_selected.is_empty() {
                     if let Some(entry) = app.selected_password() {
                         app.open_modal(Modal::new_confirmation(
@@ -94,7 +94,23 @@ impl EventHandler {
                         ));
                     }
                 } else {
-                    app.delete_selected_entries();
+                    let selected_entries: Vec<String> = app
+                        .multi_selected
+                        .iter()
+                        .filter_map(|&idx| app.filtered_passwords.get(idx))
+                        .map(|entry| format!("{} | {}", entry.name, entry.id))
+                        .collect();
+                    let entries_list = selected_entries.join("\n- ");
+                    let message = format!(
+                        "Are you sure you want to delete these entries?\n\n- {}",
+                        entries_list
+                    );
+                    app.open_modal(Modal::new_confirmation(
+                        ConfirmationType::BulkDelete,
+                        " Confirm Bulk Delete ".into(),
+                        message,
+                        None,
+                    ));
                 }
             }
             AppEvent::CreateEntry => {

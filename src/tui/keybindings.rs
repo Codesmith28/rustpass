@@ -11,6 +11,7 @@ pub enum AppEvent {
     CopyPassword, // Alt+c
     EditEntry,    // Alt+e
     DeleteEntry,  // Alt+d
+    BulkDelete,
     CreateEntry,  // Alt+n
     MultiSelect,  // Tab: mark current & move to next
     CloseModal,   // Esc: close modal

@@ -18,6 +18,7 @@ pub enum ModalType {
 #[derive(PartialEq)]
 pub enum ConfirmationType {
     Delete,
+    BulkDelete,
 }
 
 #[derive(PartialEq)]
