@@ -1,7 +1,7 @@
 use crate::models::data::{Metadata, PasswordEntry};
 use ratatui::{
     layout::Rect,
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Frame,
@@ -212,12 +212,18 @@ fn render_input_modal(f: &mut Frame, modal: &Modal, area: Rect) {
             let line = Line::from(vec![
                 Span::raw(format!("{}: ", field.label)),
                 Span::styled(
-                    value,
+                    value.clone(),
                     Style::default().fg(if is_active {
                         Color::Yellow
                     } else {
                         Color::White
                     }),
+                ),
+                Span::styled(
+                    if is_active { "_" } else { "" },
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::SLOW_BLINK),
                 ),
             ]);
 
@@ -225,7 +231,7 @@ fn render_input_modal(f: &mut Frame, modal: &Modal, area: Rect) {
         })
         .collect();
 
-    let help_text = "\nTab: Next field | Shift+Tab: Previous field | Enter: Confirm | Esc: Cancel";
+    let help_text = "\nTab: Next field | Enter: Confirm | Esc: Cancel";
     let list = List::new(items).block(
         Block::default()
             .borders(Borders::ALL)

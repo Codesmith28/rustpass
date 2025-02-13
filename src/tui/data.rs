@@ -13,3 +13,10 @@ pub fn load_passwords(file_path: &str) -> Result<Vec<PasswordEntry>> {
     log::debug!("{:#?}", passwords);
     Ok(passwords)
 }
+
+pub fn save_passwords(file_path: &str, passwords: &[PasswordEntry]) -> std::io::Result<()> {
+    let json = serde_json::to_string_pretty(passwords)?;
+    fs::write(file_path, json)?;
+    log::debug!("Passwords saved successfully");
+    Ok(())
+}

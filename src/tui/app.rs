@@ -1,4 +1,4 @@
-use crate::models::data::PasswordEntry;
+use crate::models::data::{Metadata, PasswordEntry};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::style::Color;
 use std::time::Instant;
@@ -7,6 +7,7 @@ use std::time::Instant;
 use crate::tui::layout::restore_terminal;
 use crate::tui::widgets::{modal::Modal, modal::ModalType, notification::Notification};
 
+use super::data::save_passwords;
 use super::widgets::modal::{ConfirmationType, InputType};
 
 pub fn fuzzy_match(query: &str, target: &str) -> bool {
@@ -194,17 +195,53 @@ impl App {
                             color: Color::Red,
                             created: Instant::now(),
                         });
+                        // Save after deletion
+                        if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
+                            log::error!("Failed to save passwords: {}", e);
+                            self.notification = Some(Notification {
+                                header: "Error".into(),
+                                message: "Failed to save changes".into(),
+                                color: Color::Red,
+                                created: Instant::now(),
+                            });
+                        }
                     }
                 }
-                ModalType::Input(InputType::Edit) => {
-                    if let Some(new_entry) = modal.to_password_entry() {
-                        if let Some(old_entry) = modal.entry {
-                            // Update existing entry
-                            if let Some(entry) =
-                                self.all_passwords.iter_mut().find(|p| p.id == old_entry.id)
-                            {
-                                let name = new_entry.name.clone(); // Clone name before move
-                                *entry = new_entry;
+                ModalType::Input(input_type) => {
+                    let name = modal.input_fields[0].value.clone();
+                    let id = modal.input_fields[1].value.clone();
+                    let password = modal.input_fields[2].value.clone();
+                    let url = Some(modal.input_fields[3].value.clone());
+                    let notes = Some(modal.input_fields[4].value.clone());
+
+                    match input_type {
+                        InputType::Create => {
+                            let entry = PasswordEntry {
+                                name: name.clone(),
+                                id: id.clone(),
+                                password,
+                                metadata: Metadata { url, notes },
+                            };
+                            self.all_passwords.push(entry);
+                            self.filter_passwords();
+                            self.notification = Some(Notification {
+                                header: "Created".into(),
+                                message: format!("{} created!", name),
+                                color: Color::Green,
+                                created: Instant::now(),
+                            });
+                        }
+                        InputType::Edit => {
+                            if let Some(entry) = modal.entry {
+                                if let Some(existing_entry) =
+                                    self.all_passwords.iter_mut().find(|p| p.id == entry.id)
+                                {
+                                    existing_entry.name = name.clone();
+                                    existing_entry.id = id;
+                                    existing_entry.password = password;
+                                    existing_entry.metadata.url = url;
+                                    existing_entry.metadata.notes = notes;
+                                }
                                 self.filter_passwords();
                                 self.notification = Some(Notification {
                                     header: "Updated".into(),
@@ -215,15 +252,13 @@ impl App {
                             }
                         }
                     }
-                }
-                ModalType::Input(InputType::Create) => {
-                    if let Some(new_entry) = modal.to_password_entry() {
-                        self.all_passwords.push(new_entry.clone());
-                        self.filter_passwords();
+                    // Save after create or edit
+                    if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
+                        log::error!("Failed to save passwords: {}", e);
                         self.notification = Some(Notification {
-                            header: "Created".into(),
-                            message: format!("{} created!", new_entry.name),
-                            color: Color::Green,
+                            header: "Error".into(),
+                            message: "Failed to save changes".into(),
+                            color: Color::Red,
                             created: Instant::now(),
                         });
                     }
