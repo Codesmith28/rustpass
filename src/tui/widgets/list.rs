@@ -2,6 +2,7 @@ use crate::tui::app::App;
 use ratatui::{
     layout::Rect,
     style::{Color, Style},
+    text::{Line, Span},
     widgets::{Block, BorderType, Borders, Clear, List, ListItem},
     Frame,
 };
@@ -17,20 +18,29 @@ pub fn render_password_list(f: &mut Frame, app: &App, area: Rect) {
             .iter()
             .enumerate()
             .map(|(i, entry)| {
-                // If multi-selected, prefix with "o " and use green
-                if app.multi_selected.contains(&i) {
-                    let content = format!("o {} | {}", entry.name, entry.id);
-                    return ListItem::new(content).style(Style::default().fg(Color::Green));
-                }
-                // Otherwise, use "> " for current hover, "  " for normal.
-                let prefix = if i == app.selected_index { "> " } else { "  " };
-                let content = format!("{}{} | {}", prefix, entry.name, entry.id);
-                let item = ListItem::new(content);
-                if i == app.selected_index {
-                    item.style(Style::default().fg(Color::Yellow))
-                } else {
-                    item
-                }
+                let is_selected = i == app.selected_index;
+                let is_multi_selected = app.multi_selected.contains(&i);
+
+                let prefix = match (is_selected, is_multi_selected) {
+                    (true, true) => "> o ",   // Both cursor and selected
+                    (true, false) => ">   ",  // Just cursor
+                    (false, true) => "  o ",  // Just selected
+                    (false, false) => "    ", // Neither
+                };
+
+                let line = Line::from(vec![
+                    Span::styled(
+                        prefix,
+                        Style::default().fg(if is_multi_selected {
+                            Color::Yellow
+                        } else {
+                            Color::White
+                        }),
+                    ),
+                    Span::raw(format!("{} | {}", entry.name, entry.id)),
+                ]);
+
+                ListItem::new(line)
             })
             .collect()
     };

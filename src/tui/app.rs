@@ -155,7 +155,15 @@ impl App {
     // Toggles multi-selection for the current entry and moves to the next one.
     pub fn toggle_multi_select(&mut self) {
         if self.filtered_passwords.get(self.selected_index).is_some() {
-            if !self.multi_selected.contains(&self.selected_index) {
+            if let Some(pos) = self
+                .multi_selected
+                .iter()
+                .position(|&x| x == self.selected_index)
+            {
+                // If already selected, unselect it
+                self.multi_selected.remove(pos);
+            } else {
+                // If not selected, select it
                 self.multi_selected.push(self.selected_index);
             }
             self.move_selection_down();
