@@ -33,11 +33,20 @@ pub fn render_password_list(f: &mut Frame, app: &App, area: Rect) {
                         prefix,
                         Style::default().fg(if is_multi_selected {
                             Color::Yellow
+                        } else if is_selected {
+                            Color::Cyan // Changed to make ">" cyan when selected
                         } else {
                             Color::White
                         }),
                     ),
-                    Span::raw(format!("{} | {}", entry.name, entry.id)),
+                    Span::styled(
+                        format!("{} | {}", entry.name, entry.id),
+                        Style::default().fg(if is_selected {
+                            Color::Cyan
+                        } else {
+                            Color::White
+                        }),
+                    ),
                 ]);
 
                 ListItem::new(line)
