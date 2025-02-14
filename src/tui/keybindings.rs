@@ -12,9 +12,9 @@ pub enum AppEvent {
     EditEntry,    // Alt+e
     DeleteEntry,  // Alt+d
     BulkDelete,
-    CreateEntry,  // Alt+n
-    MultiSelect,  // Tab: mark current & move to next
-    CloseModal,   // Esc: close modal
+    CreateEntry, // Alt+n
+    MultiSelect, // Tab: mark current & move to next
+    CloseModal,  // Esc: close modal
 }
 
 impl Default for KeyBindings {
@@ -36,7 +36,7 @@ impl KeyBindings {
             quit: KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE),
             move_up: KeyEvent::new(KeyCode::Up, KeyModifiers::NONE),
             move_down: KeyEvent::new(KeyCode::Down, KeyModifiers::NONE),
-            toggle_help: KeyEvent::new(KeyCode::Char('h'), KeyModifiers::CONTROL),
+            toggle_help: KeyEvent::new(KeyCode::Char('h'), KeyModifiers::ALT),
         }
     }
 

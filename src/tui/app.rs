@@ -1,6 +1,7 @@
 use crate::models::data::{Metadata, PasswordEntry};
 use crate::utils::fuzzy_finder::fuzzy_match;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use log::debug;
 use ratatui::style::Color;
 use std::time::Instant;
 
@@ -100,7 +101,7 @@ impl App {
         let _ = restore_terminal();
     }
 
-    // Copies the password of the current selection to clipboard.
+    // Copies the password of the current selection to cli  pboard.
     pub fn copy_password(&mut self) {
         if let Some(entry) = self.selected_password() {
             let mut clipboard = match Clipboard::new() {
@@ -115,8 +116,9 @@ impl App {
                     return;
                 }
             };
-
-            if let Err(e) = clipboard.set_text(entry.password.clone()) {
+            let selected_password = entry.password.clone();
+            debug!("Selected password: {}", selected_password);
+            if let Err(e) = clipboard.set_text(selected_password) {
                 self.notification = Some(Notification {
                     header: "Error".into(),
                     message: format!("Failed to copy to clipboard: {}", e),
