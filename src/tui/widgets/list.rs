@@ -19,7 +19,7 @@ pub fn render_password_list(f: &mut Frame, app: &App, area: Rect) {
             .enumerate()
             .map(|(i, entry)| {
                 let is_selected = i == app.selected_index;
-                let is_multi_selected = app.multi_selected.contains(&i);
+                let is_multi_selected = app.multi_selected.contains(&entry.id);
 
                 let prefix = match (is_selected, is_multi_selected) {
                     (true, true) => "> o ",   // Both cursor and selected

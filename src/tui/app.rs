@@ -1,5 +1,6 @@
 use crate::models::data::{Metadata, PasswordEntry};
 use crate::utils::fuzzy_finder::fuzzy_match;
+use crate::utils::verify_passwords::verify_password;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use log::debug;
 use ratatui::style::Color;
@@ -21,7 +22,7 @@ pub struct App {
     pub filtered_passwords: Vec<PasswordEntry>,
     pub selected_index: usize,
     pub show_help: bool,
-    pub multi_selected: Vec<usize>, // holds indices of multi-selected entries
+    pub multi_selected: Vec<String>, // Changed to store IDs instead of indices
     pub notification: Option<Notification>, // new field for notifications
     pub modal: Option<Modal>,
 }
@@ -59,7 +60,6 @@ impl App {
             .cloned()
             .collect();
         self.selected_index = 0;
-        self.multi_selected.clear();
     }
 
     pub fn move_selection_up(&mut self) {
@@ -139,17 +139,14 @@ impl App {
 
     // Toggles multi-selection for the current entry and moves to the next one.
     pub fn toggle_multi_select(&mut self) {
-        if self.filtered_passwords.get(self.selected_index).is_some() {
-            if let Some(pos) = self
-                .multi_selected
-                .iter()
-                .position(|&x| x == self.selected_index)
-            {
+        if let Some(entry) = self.filtered_passwords.get(self.selected_index) {
+            let entry_id = entry.id.clone();
+            if let Some(pos) = self.multi_selected.iter().position(|x| x == &entry_id) {
                 // If already selected, unselect it
                 self.multi_selected.remove(pos);
             } else {
                 // If not selected, select it
-                self.multi_selected.push(self.selected_index);
+                self.multi_selected.push(entry_id);
             }
             self.move_selection_down();
         }
@@ -206,21 +203,34 @@ impl App {
                     }
                 }
                 ModalType::Confirm(ConfirmationType::BulkDelete) => {
-                    // Remove entries in multi_selected (assuming indices are sorted in ascending order)
-                    self.multi_selected.sort();
-                    self.multi_selected.reverse();
-                    for idx in &self.multi_selected {
-                        if let Some(entry) = self.filtered_passwords.get(*idx) {
-                            self.all_passwords.retain(|p| p.id != entry.id);
-                        }
-                    }
+                    // Save IDs before clearing the selection
+                    let selected_ids = self.multi_selected.clone();
+
+                    // Remove all selected entries
+                    self.all_passwords.retain(|p| !selected_ids.contains(&p.id));
+
+                    // Clear the selection and update display
+                    self.multi_selected.clear();
                     self.filter_passwords();
+
+                    // Show notification
                     self.notification = Some(Notification {
                         header: "Deleted".into(),
                         message: "Selected entries deleted!".into(),
                         color: Color::Red,
                         created: Instant::now(),
                     });
+
+                    // Save changes
+                    if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
+                        log::error!("Failed to save passwords: {}", e);
+                        self.notification = Some(Notification {
+                            header: "Error".into(),
+                            message: "Failed to save changes".into(),
+                            color: Color::Red,
+                            created: Instant::now(),
+                        });
+                    }
                 }
                 ModalType::Input(input_type) => {
                     let name = modal.input_fields[0].value.clone();
@@ -237,6 +247,7 @@ impl App {
                                 password,
                                 metadata: Metadata { url, notes },
                             };
+
                             self.all_passwords.push(entry);
                             self.filter_passwords();
                             self.notification = Some(Notification {
@@ -257,6 +268,11 @@ impl App {
                                     existing_entry.metadata.url = url;
                                     existing_entry.metadata.notes = notes;
                                 }
+
+                                if !verify_password(&entry, self) {
+                                    return;
+                                }
+
                                 self.filter_passwords();
                                 self.notification = Some(Notification {
                                     header: "Updated".into(),

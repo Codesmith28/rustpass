@@ -105,9 +105,9 @@ impl EventHandler {
                     }
                 } else {
                     let selected_entries: Vec<String> = app
-                        .multi_selected
+                        .filtered_passwords
                         .iter()
-                        .filter_map(|&idx| app.filtered_passwords.get(idx))
+                        .filter(|entry| app.multi_selected.contains(&entry.id))
                         .map(|entry| format!("{} | {}", entry.name, entry.id))
                         .collect();
                     let entries_list = selected_entries.join("\n- ");

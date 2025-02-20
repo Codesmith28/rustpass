@@ -1,4 +1,4 @@
-use crate::models::data::{Metadata, PasswordEntry};
+use crate::models::data::PasswordEntry;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -150,22 +150,6 @@ impl Modal {
         if let Some(field) = self.input_fields.get_mut(self.active_field) {
             field.value.pop();
         }
-    }
-
-    pub fn to_password_entry(&self) -> Option<PasswordEntry> {
-        if self.input_fields.len() < 5 {
-            return None;
-        }
-
-        Some(PasswordEntry {
-            name: self.input_fields[0].value.clone(),
-            id: self.input_fields[1].value.clone(),
-            password: self.input_fields[2].value.clone(),
-            metadata: Metadata {
-                url: Some(self.input_fields[3].value.clone()),
-                notes: Some(self.input_fields[4].value.clone()),
-            },
-        })
     }
 }
 
