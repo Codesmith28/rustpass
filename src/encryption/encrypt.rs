@@ -3,6 +3,7 @@ pub static FIBBONACI_NUMBERS: [i32; 20] = [
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
 ];
 
+// fibil encryption
 pub fn fibbil_hash(string: &str) -> String {
     let mut hash = String::new();
     for char in string.chars() {
@@ -38,3 +39,5 @@ pub fn codesmith28(string: &str) -> String {
 
     x
 }
+
+// pub fn salted(string: &str) -> String {}
