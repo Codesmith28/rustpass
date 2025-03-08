@@ -1,39 +1,51 @@
-use super::encrypt::FIBBONACI_NUMBERS;
+use super::encrypt::{FIBBONACI_NUMBERS, NUMERIC_KEY};
 
-pub fn fibbil_unhash(hash: &str) -> String {
-    let mut un_hash = String::new();
-    for char in hash.chars() {
-        let shifted = ((char as u32) - (FIBBONACI_NUMBERS[char as usize] as u32)) as u8;
-        un_hash.push(shifted as char);
+
+pub fn fibbil_unhash(encrypted: &str) -> String {
+    let mut original = String::new();
+    for (i, char) in encrypted.chars().enumerate() {
+        let key_index = (i % NUMERIC_KEY.len()) as usize;
+        let fib_index = (NUMERIC_KEY[key_index] - 1) as usize;
+        // Use wrapping_sub to handle underflow safely
+        let shifted = (((char as u32).wrapping_sub(FIBBONACI_NUMBERS[fib_index] as u32)) % 128) as u8;
+        original.push(shifted as char);
     }
-    un_hash
+    original
 }
-pub fn codesmith82(encoded: &str) -> Option<String> {
-    // Find the split point
-    let char_count = encoded.chars().take_while(|c| !c.is_ascii_digit()).count();
 
-    if char_count == 0 || char_count == encoded.len() {
-        return None; // Invalid format
+pub fn decode_codesmith28(encrypted: &str) -> String {
+    if encrypted.is_empty() {
+        return String::new();
     }
 
-    let chars: Vec<char> = encoded[..char_count].chars().collect();
-    let indices_str = &encoded[char_count..];
+    // Split at the separator
+    let parts: Vec<&str> = encrypted.split('|').collect();
+    if parts.len() != 2 {
+        return String::new(); // Invalid format
+    }
 
-    // Extract numeric indices correctly
-    let indices: Vec<usize> = indices_str
-        .split_inclusive(|c: char| c.is_ascii_digit())
-        .filter_map(|s| s.parse::<usize>().ok())
+    let x = parts[0];
+    let y = parts[1];
+    
+    if y.len() % 3 != 0 {
+        return String::new(); // Invalid index format
+    }
+
+    // Convert y back to the original positions using fixed-width format
+    let mut positions: Vec<(usize, char)> = y
+        .chars()
+        .collect::<Vec<_>>()
+        .chunks(3)
+        .filter_map(|chunk| {
+            let idx_str: String = chunk.iter().collect();
+            idx_str.parse::<usize>().ok()
+        })
+        .zip(x.chars())
         .collect();
-
-    // Ensure the number of characters matches the indices
-    if chars.len() != indices.len() {
-        return None;
-    }
-
-    // Pair and sort by original position
-    let mut pairs: Vec<(char, usize)> = chars.into_iter().zip(indices).collect();
-    pairs.sort_by_key(|&(_, pos)| pos);
-
-    // Reconstruct the original string
-    Some(pairs.into_iter().map(|(c, _)| c).collect())
+    
+    // Sort by original index
+    positions.sort_by_key(|&(i, _)| i);
+    
+    // Build the original string
+    positions.into_iter().map(|(_, c)| c).collect()
 }
