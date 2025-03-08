@@ -9,10 +9,12 @@ use std::time::{Duration, Instant};
 use super::widgets::notification::Notification;
 use super::widgets::{modal::ConfirmationType, modal::InputType, modal::Modal};
 
+// struct for the event handler:
 pub struct EventHandler {
     bindings: KeyBindings,
 }
 
+// implementation for the event handler:
 impl EventHandler {
     pub fn new() -> Self {
         Self {
@@ -20,6 +22,7 @@ impl EventHandler {
         }
     }
 
+    // get the next event:
     pub fn next_event(&mut self, app: &mut App) -> Option<KeyEvent> {
         if event::poll(Duration::from_millis(50)).unwrap() {
             if let event::Event::Key(key) = event::read().unwrap() {
@@ -50,6 +53,7 @@ impl EventHandler {
         None
     }
 
+    // handle the action:
     fn handle_action(&self, action: AppEvent, app: &mut App) {
         match action {
             AppEvent::Quit => app.quit(),
@@ -59,6 +63,8 @@ impl EventHandler {
             AppEvent::SearchChar(c) => {
                 app.update_search(c);
             }
+
+            // handle the backspace event:
             AppEvent::Backspace => {
                 app.search_input.pop();
                 let search = app.search_input.to_lowercase();
@@ -74,9 +80,13 @@ impl EventHandler {
                     .collect();
                 app.selected_index = 0;
             }
+
+            // handle the copy password event:
             AppEvent::CopyPassword => {
                 app.copy_password();
             }
+
+            // handle the edit entry event:
             AppEvent::EditEntry => {
                 if !app.multi_selected.is_empty() {
                     app.notification = Some(Notification {
@@ -93,6 +103,8 @@ impl EventHandler {
                     ));
                 }
             }
+
+            // handle the delete entry event:
             AppEvent::DeleteEntry | AppEvent::BulkDelete => {
                 if app.multi_selected.is_empty() {
                     if let Some(entry) = app.selected_password() {
@@ -123,6 +135,8 @@ impl EventHandler {
                     ));
                 }
             }
+
+            // handle the create entry event:
             AppEvent::CreateEntry => {
                 app.open_modal(Modal::new_input(
                     InputType::Create,
@@ -130,9 +144,13 @@ impl EventHandler {
                     None,
                 ));
             }
+
+            // handle the multi select event:
             AppEvent::MultiSelect => {
                 app.toggle_multi_select();
             }
+
+            // handle the close modal event:
             AppEvent::CloseModal => {
                 if app.modal.is_some() {
                     app.close_modal();
@@ -144,6 +162,7 @@ impl EventHandler {
     }
 }
 
+// default implementation for the event handler:
 impl Default for EventHandler {
     fn default() -> Self {
         Self::new()

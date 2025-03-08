@@ -2,6 +2,7 @@ use log::debug;
 use std::fs::File;
 use std::io::Write;
 
+// logger function initialization for debugging:
 pub fn init_logger() {
     use std::env;
     env::set_var("RUST_LOG", "debug");

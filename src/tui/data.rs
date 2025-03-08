@@ -2,6 +2,7 @@ use crate::models::data::PasswordEntry;
 use serde_json::Result;
 use std::fs;
 
+// load the passwords from the file:
 pub fn load_passwords(file_path: &str) -> Result<Vec<PasswordEntry>> {
     if !std::path::Path::new(file_path).exists() {
         fs::write(file_path, "[]").expect("Failed to create default JSON file");
@@ -14,6 +15,7 @@ pub fn load_passwords(file_path: &str) -> Result<Vec<PasswordEntry>> {
     Ok(passwords)
 }
 
+// save the passwords to the file:
 pub fn save_passwords(file_path: &str, passwords: &[PasswordEntry]) -> std::io::Result<()> {
     let json = serde_json::to_string_pretty(passwords)?;
     fs::write(file_path, json)?;

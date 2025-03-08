@@ -1,3 +1,4 @@
+// fuzzy finder function to find a password by name:
 pub fn fuzzy_match(query: &str, target: &str) -> bool {
     if query.is_empty() {
         return true;

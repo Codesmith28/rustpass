@@ -15,6 +15,7 @@ use super::widgets::modal::{ConfirmationType, InputType};
 
 use arboard::Clipboard;
 
+// struct for the app:
 pub struct App {
     pub running: bool,
     pub search_input: String,
@@ -27,6 +28,7 @@ pub struct App {
     pub modal: Option<Modal>,
 }
 
+// implementation for the app:
 impl App {
     pub fn new(passwords: Vec<PasswordEntry>) -> Self {
         Self {
@@ -42,11 +44,13 @@ impl App {
         }
     }
 
+    // update the search input:
     pub fn update_search(&mut self, c: char) {
         self.search_input.push(c);
         self.filter_passwords();
     }
 
+    // filter the passwords:
     pub fn filter_passwords(&mut self) {
         let search = self.search_input.to_lowercase();
         self.filtered_passwords = self
@@ -62,6 +66,7 @@ impl App {
         self.selected_index = 0;
     }
 
+    // move the selection up:
     pub fn move_selection_up(&mut self) {
         let len = self.filtered_passwords.len();
         if len > 0 {
@@ -73,6 +78,7 @@ impl App {
         }
     }
 
+    // move the selection down:
     pub fn move_selection_down(&mut self) {
         let len = self.filtered_passwords.len();
         if len > 0 {
@@ -84,10 +90,12 @@ impl App {
         }
     }
 
+    // toggle the help:
     pub fn toggle_help(&mut self) {
         self.show_help = !self.show_help;
     }
 
+    // get the selected password:
     pub fn selected_password(&self) -> Option<&PasswordEntry> {
         if self.filtered_passwords.is_empty() {
             None
@@ -96,12 +104,13 @@ impl App {
         }
     }
 
+    // quit the app:
     pub fn quit(&mut self) {
         self.running = false;
         let _ = restore_terminal();
     }
 
-    // Copies the password of the current selection to cli  pboard.
+    // Copies the password of the current selection to clipboard:
     pub fn copy_password(&mut self) {
         if let Some(entry) = self.selected_password() {
             let mut clipboard = match Clipboard::new() {
@@ -137,7 +146,7 @@ impl App {
         }
     }
 
-    // Toggles multi-selection for the current entry and moves to the next one.
+    // Toggles multi-selection for the current entry and moves to the next one:
     pub fn toggle_multi_select(&mut self) {
         if let Some(entry) = self.filtered_passwords.get(self.selected_index) {
             let entry_id = entry.id.clone();
@@ -152,7 +161,6 @@ impl App {
         }
     }
 
-    // debug!("Successfully loaded password file");
     pub fn open_modal(&mut self, modal: Modal) {
         self.modal = Some(modal);
     }
@@ -178,9 +186,11 @@ impl App {
         }
     }
 
+    // confirm the modal:
     pub fn confirm_modal(&mut self) {
         if let Some(modal) = self.modal.take() {
             match modal.typ {
+                // handle the delete confirmation:
                 ModalType::Confirm(ConfirmationType::Delete) => {
                     if let Some(entry) = modal.entry {
                         self.all_passwords.retain(|p| p.id != entry.id);
@@ -203,6 +213,8 @@ impl App {
                         }
                     }
                 }
+
+                // handle the bulk delete confirmation:
                 ModalType::Confirm(ConfirmationType::BulkDelete) => {
                     // Save IDs before clearing the selection
                     let selected_ids = self.multi_selected.clone();
@@ -233,6 +245,7 @@ impl App {
                         });
                     }
                 }
+                
                 ModalType::Input(input_type) => {
                     let name = modal.input_fields[0].value.clone();
                     let id = modal.input_fields[1].value.clone();

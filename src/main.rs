@@ -13,8 +13,10 @@ use tui::widgets::ui::render_ui;
 use utils::logger::init_logger;
 
 fn main() -> std::io::Result<()> {
+    // to log the events for debugging:
     init_logger();
 
+    // load the list of passwords from the file:
     let passwords = match load_passwords("./passwords.json") {
         Ok(passwords) => {
             //debug!("Successfully loaded password file! \n Number of passwords loaded: {}", passwords.len());
@@ -30,14 +32,18 @@ fn main() -> std::io::Result<()> {
     // Setup TUI
     let mut terminal = setup_terminal()?;
 
+    // create the app:      
     let mut app = App::new(passwords);
+
+    // create the event handler:
     let mut events = EventHandler::new();
 
+    // run the app:
     while app.running {
         terminal.draw(|f| render_ui(f, &app))?;
-
         if let Some(_key) = events.next_event(&mut app) {}
     }
 
+    // exit the app:
     Ok(())
 }

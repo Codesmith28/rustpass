@@ -1,4 +1,4 @@
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+    use ratatui::layout::{Constraint, Direction, Layout, Rect};
 
 pub fn bottom_right_rect(percent_width: u16, percent_height: u16, r: Rect) -> Rect {
     let popup_width = r.width * percent_width / 100;
