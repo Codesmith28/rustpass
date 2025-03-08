@@ -26,5 +26,31 @@ pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
             .title(" Preview "),
     );
 
-    f.render_widget(preview, area);
+    // Create a smaller area for the hint text below the preview
+    let hint_area = Rect {
+        x: area.x,
+        y: area.y + area.height - 3, 
+        width: area.width,
+        height: 3,
+    };
+
+    // Adjust preview area to make room for hint
+    let preview_area = Rect {
+        x: area.x,
+        y: area.y,
+        width: area.width,
+        height: area.height - 3,
+    };
+
+    // Render both widgets
+    f.render_widget(preview, preview_area);
+    f.render_widget(
+        Paragraph::new("Press Alt + H for help").block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
+                .title(" Help ")
+        ),
+        hint_area,
+    );
 }
