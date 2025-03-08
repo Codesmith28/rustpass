@@ -9,7 +9,7 @@ pub fn verify_password(entry: &PasswordEntry, app: &mut App) -> bool {
     if entry.password.len() > 21 || entry.password.len() < 8 {
         app.notification = Some(Notification {
             header: "Error".into(),
-            message: format!("Password must be between 8 and 21 characters long"),
+            message: "Password must be between 8 and 21 characters long".to_string(),
             color: Color::Red,
             created: Instant::now(),
         });

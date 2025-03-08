@@ -32,7 +32,6 @@ pub struct Modal {
     pub title: String,
     pub content: String,
     pub entry: Option<PasswordEntry>,
-    // New fields for input handling
     pub input_fields: Vec<InputField>,
     pub active_field: usize,
 }
@@ -217,6 +216,7 @@ fn render_input_modal(f: &mut Frame, modal: &Modal, area: Rect) {
         .collect();
 
     let help_text = "\nTab: Next field | Enter: Confirm | Esc: Cancel";
+
     let list = List::new(items).block(
         Block::default()
             .borders(Borders::ALL)

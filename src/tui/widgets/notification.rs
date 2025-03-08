@@ -2,7 +2,7 @@ use super::layout::bottom_right_rect;
 use ratatui::{
     layout::Rect,
     style::{Color, Style},
-    widgets::{Block, BorderType, Borders, Paragraph},
+    widgets::{Block, BorderType, Borders, Clear, Paragraph},
     Frame,
 };
 use std::time::{Duration, Instant};
@@ -45,13 +45,17 @@ pub fn render_notification(f: &mut Frame, notif: &Notification) {
         height: base_area.height,
     };
 
+    // Clear the area before rendering the notification
+    f.render_widget(Clear, notif_area);
+
     let text = format!("{}\n\n{}", notif.header, notif.message);
     let widget = Paragraph::new(text).block(
         Block::default()
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
             .title("Notification")
-            .border_style(Style::default().fg(notif.color)),
+            .border_style(Style::default().fg(notif.color))
+            .style(Style::default().bg(Color::Reset)),
     );
 
     f.render_widget(widget, notif_area);

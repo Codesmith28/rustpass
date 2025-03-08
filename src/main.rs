@@ -17,13 +17,13 @@ fn main() -> std::io::Result<()> {
 
     let passwords = match load_passwords("./passwords.json") {
         Ok(passwords) => {
-            // debug!("Successfully loaded password file");
-            // debug!("Number of passwords loaded: {}", passwords.len());
+            //debug!("Successfully loaded password file! \n Number of passwords loaded: {}", passwords.len());
             passwords
         }
         Err(e) => {
             error!("Failed to load passwords: {}", e);
-            Vec::new() // Return empty vec on error
+            // Return empty vec on error
+            Vec::new()
         }
     };
 

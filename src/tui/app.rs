@@ -152,6 +152,7 @@ impl App {
         }
     }
 
+    // debug!("Successfully loaded password file");
     pub fn open_modal(&mut self, modal: Modal) {
         self.modal = Some(modal);
     }
@@ -283,6 +284,7 @@ impl App {
                             }
                         }
                     }
+
                     // Save after create or edit
                     if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
                         log::error!("Failed to save passwords: {}", e);
