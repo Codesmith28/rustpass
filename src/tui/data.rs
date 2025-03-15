@@ -22,7 +22,9 @@ pub fn derive_key(password: &str, salt: &[u8]) -> Result<EncryptionKey, String> 
     let hash = argon2
         .hash_password(hashed.as_bytes(), &salt_str)
         .map_err(|e| format!("Failed to derive key: {}", e))?;
+
     key.copy_from_slice(&hash.hash.unwrap().as_bytes()[..32]);
+
     Ok(key)
 }
 
@@ -67,6 +69,7 @@ pub fn load_passwords(file_path: &str, password: &str) -> PasswordDataResult {
     let nonce = STANDARD
         .decode(&encrypted.nonce)
         .map_err(|e| format!("Invalid nonce: {}", e))?;
+
     let encrypted_data = STANDARD
         .decode(&encrypted.encrypted_data)
         .map_err(|e| format!("Invalid encrypted data: {}", e))?;
