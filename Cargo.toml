@@ -12,7 +12,11 @@ env_logger = "0.11.6"
 log = "0.4.25"
 chrono = "0.4.39"
 arboard = "3.3"
-pam = "0.8.0"                                      # PAM authentication
-systemd = "0.10.0"                                 # Systemd integration for session management
-zbus = "3.14.1"                                    # D-Bus communication for systemd-logind
+pam = "0.8.0"                                       # PAM authentication
+systemd = "0.10.0"                                  # Systemd integration for session management
+zbus = "3.14.1"                                     # D-Bus communication for systemd-logind
 tokio = { version = "1.36.0", features = ["full"] } # Async runtime for session monitoring
+argon2 = "0.5.3"
+aes-gcm = "0.10.3"
+rand = "0.9.0"
+base64 = "0.22.1"

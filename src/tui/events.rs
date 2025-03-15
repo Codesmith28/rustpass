@@ -1,6 +1,7 @@
 use crate::tui::app::App;
 use crate::tui::keybindings::{AppEvent, KeyBindings};
 use crate::utils::fuzzy_finder::fuzzy_match;
+use crate::models::data::PasswordEntry;
 
 use crossterm::event::{self, KeyCode, KeyEvent};
 use ratatui::style::Color;
@@ -96,10 +97,18 @@ impl EventHandler {
                         created: Instant::now(),
                     });
                 } else if let Some(entry) = app.selected_password() {
+                    // Create a new PasswordEntry to avoid type mismatch
+                    let entry_clone = PasswordEntry {
+                        name: entry.name.clone(),
+                        id: entry.id.clone(),
+                        password: entry.password.clone(),
+                        metadata: entry.metadata.clone(),
+                    };
+                    
                     app.open_modal(Modal::new_input(
                         InputType::Edit,
                         " Edit Entry ".into(),
-                        Some(entry.clone()),
+                        Some(entry_clone),
                     ));
                 }
             }
@@ -108,11 +117,19 @@ impl EventHandler {
             AppEvent::DeleteEntry | AppEvent::BulkDelete => {
                 if app.multi_selected.is_empty() {
                     if let Some(entry) = app.selected_password() {
+                        // Create a new PasswordEntry to avoid type mismatch
+                        let entry_clone = PasswordEntry {
+                            name: entry.name.clone(),
+                            id: entry.id.clone(),
+                            password: entry.password.clone(),
+                            metadata: entry.metadata.clone(),
+                        };
+                        
                         app.open_modal(Modal::new_confirmation(
                             ConfirmationType::Delete,
                             " Confirm Delete ".into(),
                             format!("Are you sure you want to delete {}?", entry.name),
-                            Some(entry.clone()),
+                            Some(entry_clone),
                         ));
                     }
                 } else {

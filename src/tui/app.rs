@@ -1,6 +1,7 @@
 use crate::models::data::{Metadata, PasswordEntry};
 use crate::utils::fuzzy_finder::fuzzy_match;
 use crate::utils::verify_passwords::verify_password;
+use crate::PASSWORD_FILE_PATH;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use log::debug;
 use ratatui::style::Color;
@@ -13,7 +14,9 @@ use crate::tui::widgets::{modal::Modal, modal::ModalType, notification::Notifica
 use super::data::save_passwords;
 use super::widgets::modal::{ConfirmationType, InputType};
 
+
 use arboard::Clipboard;
+
 
 // struct for the app:
 pub struct App {
@@ -23,14 +26,16 @@ pub struct App {
     pub filtered_passwords: Vec<PasswordEntry>,
     pub selected_index: usize,
     pub show_help: bool,
-    pub multi_selected: Vec<String>, // Changed to store IDs instead of indices
-    pub notification: Option<Notification>, // new field for notifications
+    pub multi_selected: Vec<String>,
+    pub notification: Option<Notification>,
     pub modal: Option<Modal>,
+    pub encryption_key: [u8; 32], // Add this
+    pub salt: Vec<u8>,            // Add this
 }
 
 // implementation for the app:
 impl App {
-    pub fn new(passwords: Vec<PasswordEntry>) -> Self {
+    pub fn new(passwords: Vec<PasswordEntry>, encryption_key: [u8; 32], salt: Vec<u8>) -> Self {
         Self {
             running: true,
             search_input: String::new(),
@@ -41,6 +46,8 @@ impl App {
             multi_selected: Vec::new(),
             notification: None,
             modal: None,
+            encryption_key,
+            salt,
         }
     }
 
@@ -202,7 +209,7 @@ impl App {
                             created: Instant::now(),
                         });
                         // Save after deletion
-                        if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
+                        if let Err(e) = save_passwords(PASSWORD_FILE_PATH, &self.all_passwords, &self.encryption_key, &self.salt) {
                             log::error!("Failed to save passwords: {}", e);
                             self.notification = Some(Notification {
                                 header: "Error".into(),
@@ -235,7 +242,7 @@ impl App {
                     });
 
                     // Save changes
-                    if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
+                    if let Err(e) = save_passwords(PASSWORD_FILE_PATH, &self.all_passwords, &self.encryption_key, &self.salt) {
                         log::error!("Failed to save passwords: {}", e);
                         self.notification = Some(Notification {
                             header: "Error".into(),
@@ -299,7 +306,7 @@ impl App {
                     }
 
                     // Save after create or edit
-                    if let Err(e) = save_passwords("./passwords.json", &self.all_passwords) {
+                    if let Err(e) = save_passwords(PASSWORD_FILE_PATH, &self.all_passwords, &self.encryption_key, &self.salt) {
                         log::error!("Failed to save passwords: {}", e);
                         self.notification = Some(Notification {
                             header: "Error".into(),

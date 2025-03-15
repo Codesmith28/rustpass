@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Metadata {
     pub url: Option<String>,
@@ -12,4 +13,11 @@ pub struct PasswordEntry {
     pub id: String,
     pub password: String,
     pub metadata: Metadata,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct EncryptedFile {
+    pub salt: String,
+    pub nonce: String,
+    pub encrypted_data: String,
 }
