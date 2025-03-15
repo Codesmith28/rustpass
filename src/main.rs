@@ -1,27 +1,25 @@
 use crossterm::event::{KeyCode, KeyEvent};
 use log::error;
-use ratatui::{
-    backend::CrosstermBackend,
-    Terminal,
-};
+use rand::RngCore;
+use ratatui::{backend::CrosstermBackend, Terminal};
 use rustpass::models::data::PasswordEntry;
 use rustpass::tui;
 use rustpass::utils;
 use rustpass::PASSWORD_FILE_PATH;
-use std::io;
 use std::fs::File;
+use std::io;
 use std::io::{Read, Seek, SeekFrom};
 use tui::app::App;
+use tui::data::{create_password_file, load_passwords, save_passwords};
 use tui::events::EventHandler;
-use tui::data::{load_passwords, create_password_file, save_passwords};
-use tui::layout::{setup_terminal, restore_terminal};
+use tui::layout::{restore_terminal, setup_terminal};
 use tui::widgets::ui::render_ui;
 use utils::logger::init_logger;
-use serde_json;
-use rand::RngCore;
 
 // Simple password input function (replace with a proper TUI modal if desired)
-fn get_master_password(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) -> io::Result<String> {
+fn get_master_password(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+) -> io::Result<String> {
     let mut password = String::new();
     let mut events = EventHandler::new();
     // Create a dummy App instance for event handling during password input
@@ -30,17 +28,33 @@ fn get_master_password(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) ->
         terminal.draw(|f| {
             let size = f.area();
             f.render_widget(
-                ratatui::widgets::Paragraph::new(format!("Enter master password: {}", "*".repeat(password.len())))
-                    .block(ratatui::widgets::Block::default().borders(ratatui::widgets::Borders::ALL)),
+                ratatui::widgets::Paragraph::new(format!(
+                    "Enter master password: {}",
+                    "*".repeat(password.len())
+                ))
+                .block(ratatui::widgets::Block::default().borders(ratatui::widgets::Borders::ALL)),
                 size,
             );
         })?;
         if let Some(event) = events.next_event(&mut dummy_app) {
             match event {
-                KeyEvent { code: KeyCode::Char(c), .. } => password.push(c),
-                KeyEvent { code: KeyCode::Backspace, .. } => { password.pop(); },
-                KeyEvent { code: KeyCode::Enter, .. } => break,
-                KeyEvent { code: KeyCode::Esc, .. } => return Err(io::Error::new(io::ErrorKind::Interrupted, "User cancelled")),
+                KeyEvent {
+                    code: KeyCode::Char(c),
+                    ..
+                } => password.push(c),
+                KeyEvent {
+                    code: KeyCode::Backspace,
+                    ..
+                } => {
+                    password.pop();
+                }
+                KeyEvent {
+                    code: KeyCode::Enter,
+                    ..
+                } => break,
+                KeyEvent {
+                    code: KeyCode::Esc, ..
+                } => return Err(io::Error::new(io::ErrorKind::Interrupted, "User cancelled")),
                 _ => {}
             }
         }
@@ -70,6 +84,7 @@ fn main() -> io::Result<()> {
             if first_char[0] == b'[' {
                 let passwords: Vec<PasswordEntry> = serde_json::from_reader(&file)
                     .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
                 terminal.draw(|f| {
                     let size = f.area();
                     f.render_widget(
@@ -78,14 +93,17 @@ fn main() -> io::Result<()> {
                         size,
                     );
                 })?;
+
                 std::thread::sleep(std::time::Duration::from_secs(2));
                 let password = get_master_password(&mut terminal)?;
                 let mut salt = [0u8; 16];
                 rand::rng().fill_bytes(&mut salt); // Use thread_rng for consistency
                 let key: [u8; 32] = tui::data::derive_key(&password, &salt)
                     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+
                 save_passwords(file_path, &passwords, &key, &salt)
                     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+
                 Ok((passwords, key, salt.to_vec()))
             } else {
                 loop {
@@ -96,8 +114,14 @@ fn main() -> io::Result<()> {
                             terminal.draw(|f| {
                                 let size = f.area();
                                 f.render_widget(
-                                    ratatui::widgets::Paragraph::new(format!("Error: Invalid password - {}", e))
-                                        .block(ratatui::widgets::Block::default().borders(ratatui::widgets::Borders::ALL)),
+                                    ratatui::widgets::Paragraph::new(format!(
+                                        "Error: Invalid password - {}",
+                                        e
+                                    ))
+                                    .block(
+                                        ratatui::widgets::Block::default()
+                                            .borders(ratatui::widgets::Borders::ALL),
+                                    ),
                                     size,
                                 );
                             })?;
@@ -110,8 +134,12 @@ fn main() -> io::Result<()> {
             terminal.draw(|f| {
                 let size = f.area();
                 f.render_widget(
-                    ratatui::widgets::Paragraph::new("No password file found. Setting up new file...")
-                        .block(ratatui::widgets::Block::default().borders(ratatui::widgets::Borders::ALL)),
+                    ratatui::widgets::Paragraph::new(
+                        "No password file found. Setting up new file...",
+                    )
+                    .block(
+                        ratatui::widgets::Block::default().borders(ratatui::widgets::Borders::ALL),
+                    ),
                     size,
                 );
             })?;
