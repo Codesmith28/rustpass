@@ -6,6 +6,7 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io::{self, stdout};
 
+// setup the terminal for the app:
 pub fn setup_terminal() -> io::Result<Terminal<CrosstermBackend<std::io::Stdout>>> {
     enable_raw_mode()?;
     execute!(stdout(), EnterAlternateScreen)?;
@@ -13,6 +14,7 @@ pub fn setup_terminal() -> io::Result<Terminal<CrosstermBackend<std::io::Stdout>
     Terminal::new(backend)
 }
 
+// restore the terminal after the app is closed:
 pub fn restore_terminal() -> io::Result<()> {
     disable_raw_mode()?;
     execute!(stdout(), LeaveAlternateScreen)?;

@@ -5,17 +5,18 @@ pub static FIBBONACI_NUMBERS: [i32; 20] = [
 
 // static numeric key:
 pub static NUMERIC_KEY: [i32; 20] = [
-    14, 7, 3, 16, 11, 19, 1, 13, 6, 9, 17, 5, 12, 8, 4, 20, 15, 10, 18, 2
+    14, 7, 3, 16, 11, 19, 1, 13, 6, 9, 17, 5, 12, 8, 4, 20, 15, 10, 18, 2,
 ];
 
 // fibil encryption
 pub fn fibbil_hash(string: &str) -> String {
     let mut hash = String::new();
     for (i, char) in string.chars().enumerate() {
-        let key_index = (i % NUMERIC_KEY.len()) as usize;
+        let key_index = i % NUMERIC_KEY.len();
         let fib_index = (NUMERIC_KEY[key_index] - 1) as usize;
         // Use wrapping_add to handle overflow safely and ensure valid char range
-        let shifted = (((char as u32).wrapping_add(FIBBONACI_NUMBERS[fib_index] as u32)) % 128) as u8;
+        let shifted =
+            (((char as u32).wrapping_add(FIBBONACI_NUMBERS[fib_index] as u32)) % 128) as u8;
         hash.push(shifted as char);
     }
     hash
@@ -52,5 +53,3 @@ pub fn codesmith28(string: &str) -> String {
 
     x
 }
-
-

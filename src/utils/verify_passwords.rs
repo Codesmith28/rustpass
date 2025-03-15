@@ -5,6 +5,7 @@ use crate::{
 use ratatui::style::Color;
 use std::time::Instant;
 
+// verify whether the password is valid:
 pub fn verify_password(entry: &PasswordEntry, app: &mut App) -> bool {
     if entry.password.len() > 21 || entry.password.len() < 8 {
         app.notification = Some(Notification {
