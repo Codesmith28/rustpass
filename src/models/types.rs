@@ -1,4 +1,4 @@
-use crate::models::data::PasswordEntry;
+use crate::models::structs::PasswordEntry;
 
 /// A vector of password entries loaded from the file.
 pub type PasswordEntries = Vec<PasswordEntry>;

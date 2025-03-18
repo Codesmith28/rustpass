@@ -1,5 +1,5 @@
 use crate::data::data::save_passwords;
-use crate::models::data::{ Metadata, PasswordEntry };
+use crate::models::structs::{ Metadata, PasswordEntry };
 use crate::utils::fuzzy_finder::fuzzy_match;
 use crate::utils::verify_passwords::verify_password;
 use crate::PASSWORD_FILE_PATH;

@@ -15,7 +15,7 @@ use utils::logger::init_logger;
 
 use rustpass::auth::handler::derive_key;
 use rustpass::data::data::{create_password_file, load_passwords, save_passwords};
-use rustpass::models::data::PasswordEntry;
+use rustpass::models::structs::PasswordEntry;
 use rustpass::tui;
 use rustpass::utils;
 use rustpass::PASSWORD_FILE_PATH;

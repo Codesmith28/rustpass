@@ -1,5 +1,5 @@
 use crate::{
-    models::data::PasswordEntry,
+    models::structs::PasswordEntry,
     tui::{app::App, widgets::notification::Notification},
 };
 use ratatui::style::Color;

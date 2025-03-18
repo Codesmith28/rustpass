@@ -1,4 +1,4 @@
-use crate::models::data::PasswordEntry;
+use crate::models::structs::PasswordEntry;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},

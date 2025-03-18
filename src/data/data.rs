@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use std::os::unix::fs::PermissionsExt;
 
 use crate::auth::handler::derive_key;
-use crate::models::data::{EncryptedFile, PasswordEntry};
+use crate::models::structs::{EncryptedFile, PasswordEntry};
 use crate::models::types::{
     DecryptedDataResult, EncryptedDataResult, OperationResult, PasswordDataResult,
 };
