@@ -1,21 +1,19 @@
-use crate::models::data::{Metadata, PasswordEntry};
+use crate::data::data::save_passwords;
+use crate::models::data::{ Metadata, PasswordEntry };
 use crate::utils::fuzzy_finder::fuzzy_match;
 use crate::utils::verify_passwords::verify_password;
 use crate::PASSWORD_FILE_PATH;
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+// Import Notification from widgets (adjust the module path as needed)
+use crate::tui::layout::restore_terminal;
+use crate::tui::widgets::{ modal::Modal, modal::ModalType, notification::Notification };
+
+use crossterm::event::{ KeyCode, KeyEvent, KeyModifiers };
 use log::debug;
 use ratatui::style::Color;
 use std::time::Instant;
-
-// Import Notification from widgets (adjust the module path as needed)
-use crate::tui::layout::restore_terminal;
-use crate::tui::widgets::{modal::Modal, modal::ModalType, notification::Notification};
-
-use super::data::save_passwords;
-use super::widgets::modal::{ConfirmationType, InputType};
-
-
 use arboard::Clipboard;
+
+use super::widgets::modal::{ ConfirmationType, InputType };
 
 
 // struct for the app:
@@ -30,7 +28,7 @@ pub struct App {
     pub notification: Option<Notification>,
     pub modal: Option<Modal>,
     pub encryption_key: [u8; 32], // Add this
-    pub salt: Vec<u8>,            // Add this
+    pub salt: Vec<u8>, // Add this
 }
 
 // implementation for the app:
@@ -60,8 +58,7 @@ impl App {
     // filter the passwords:
     pub fn filter_passwords(&mut self) {
         let search = self.search_input.to_lowercase();
-        self.filtered_passwords = self
-            .all_passwords
+        self.filtered_passwords = self.all_passwords
             .iter()
             .filter(|p| {
                 let name = p.name.to_lowercase();
@@ -209,7 +206,14 @@ impl App {
                             created: Instant::now(),
                         });
                         // Save after deletion
-                        if let Err(e) = save_passwords(PASSWORD_FILE_PATH, &self.all_passwords, &self.encryption_key, &self.salt) {
+                        if
+                            let Err(e) = save_passwords(
+                                PASSWORD_FILE_PATH,
+                                &self.all_passwords,
+                                &self.encryption_key,
+                                &self.salt
+                            )
+                        {
                             log::error!("Failed to save passwords: {}", e);
                             self.notification = Some(Notification {
                                 header: "Error".into(),
@@ -242,7 +246,14 @@ impl App {
                     });
 
                     // Save changes
-                    if let Err(e) = save_passwords(PASSWORD_FILE_PATH, &self.all_passwords, &self.encryption_key, &self.salt) {
+                    if
+                        let Err(e) = save_passwords(
+                            PASSWORD_FILE_PATH,
+                            &self.all_passwords,
+                            &self.encryption_key,
+                            &self.salt
+                        )
+                    {
                         log::error!("Failed to save passwords: {}", e);
                         self.notification = Some(Notification {
                             header: "Error".into(),
@@ -252,7 +263,7 @@ impl App {
                         });
                     }
                 }
-                
+
                 ModalType::Input(input_type) => {
                     let name = modal.input_fields[0].value.clone();
                     let id = modal.input_fields[1].value.clone();
@@ -280,8 +291,10 @@ impl App {
                         }
                         InputType::Edit => {
                             if let Some(entry) = modal.entry {
-                                if let Some(existing_entry) =
-                                    self.all_passwords.iter_mut().find(|p| p.id == entry.id)
+                                if
+                                    let Some(existing_entry) = self.all_passwords
+                                        .iter_mut()
+                                        .find(|p| p.id == entry.id)
                                 {
                                     existing_entry.name = name.clone();
                                     existing_entry.id = id;
@@ -306,7 +319,14 @@ impl App {
                     }
 
                     // Save after create or edit
-                    if let Err(e) = save_passwords(PASSWORD_FILE_PATH, &self.all_passwords, &self.encryption_key, &self.salt) {
+                    if
+                        let Err(e) = save_passwords(
+                            PASSWORD_FILE_PATH,
+                            &self.all_passwords,
+                            &self.encryption_key,
+                            &self.salt
+                        )
+                    {
                         log::error!("Failed to save passwords: {}", e);
                         self.notification = Some(Notification {
                             header: "Error".into(),

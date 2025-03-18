@@ -1,5 +1,8 @@
-use super::encrypt::{FIBBONACI_NUMBERS, NUMERIC_KEY};
+use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit};
 
+use crate::models::types::DecryptedDataResult;
+
+use super::encrypt::{FIBBONACI_NUMBERS, NUMERIC_KEY};
 
 pub fn fibbil_unhash(encrypted: &str) -> String {
     let mut original = String::new();
@@ -48,4 +51,13 @@ pub fn decode_codesmith28(encrypted: &str) -> String {
     
     // Build the original string
     positions.into_iter().map(|(_, c)| c).collect()
+}
+
+
+// Decrypt data
+pub fn decrypt_data(ciphertext: &[u8], key: &[u8; 32], nonce: &[u8]) -> DecryptedDataResult {
+    let cipher = Aes256Gcm::new(key.into());
+    cipher
+        .decrypt(nonce.into(), ciphertext)
+        .map_err(|e| format!("Decryption failed: {}", e))
 }

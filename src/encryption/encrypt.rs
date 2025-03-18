@@ -1,3 +1,7 @@
+use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit};
+
+use crate::models::types::EncryptedDataResult;
+
 // list of numbers:
 pub static FIBBONACI_NUMBERS: [i32; 20] = [
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
@@ -52,4 +56,18 @@ pub fn codesmith28(string: &str) -> String {
     x.push_str(&y);
 
     x
+}
+
+
+// Encrypt data
+pub fn encrypt_data(data: &[u8], key: &[u8; 32]) -> EncryptedDataResult {
+    let cipher = Aes256Gcm::new(key.into());
+    let mut nonce = [0u8; 12];
+    for byte in &mut nonce {
+        *byte = rand::random();
+    }
+    let ciphertext = cipher
+        .encrypt(&nonce.into(), data)
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+    Ok((nonce.to_vec(), ciphertext))
 }

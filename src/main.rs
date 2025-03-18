@@ -2,19 +2,23 @@ use crossterm::event::{KeyCode, KeyEvent};
 use log::error;
 use rand::RngCore;
 use ratatui::{backend::CrosstermBackend, Terminal};
-use rustpass::models::data::PasswordEntry;
-use rustpass::tui;
-use rustpass::utils;
-use rustpass::PASSWORD_FILE_PATH;
+
 use std::fs::File;
 use std::io;
 use std::io::{Read, Seek, SeekFrom};
+
 use tui::app::App;
-use tui::data::{create_password_file, load_passwords, save_passwords};
 use tui::events::EventHandler;
 use tui::layout::{restore_terminal, setup_terminal};
 use tui::widgets::ui::render_ui;
 use utils::logger::init_logger;
+
+use rustpass::auth::handler::derive_key;
+use rustpass::data::data::{create_password_file, load_passwords, save_passwords};
+use rustpass::models::data::PasswordEntry;
+use rustpass::tui;
+use rustpass::utils;
+use rustpass::PASSWORD_FILE_PATH;
 
 // Simple password input function (replace with a proper TUI modal if desired)
 fn get_master_password(
@@ -98,7 +102,7 @@ fn main() -> io::Result<()> {
                 let password = get_master_password(&mut terminal)?;
                 let mut salt = [0u8; 16];
                 rand::rng().fill_bytes(&mut salt); // Use thread_rng for consistency
-                let key: [u8; 32] = tui::data::derive_key(&password, &salt)
+                let key: [u8; 32] = derive_key(&password, &salt)
                     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
                 save_passwords(file_path, &passwords, &key, &salt)
