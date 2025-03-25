@@ -22,6 +22,7 @@ use crate::{
         widgets::ui::render_ui,
     },
     PASSWORD_FILE_PATH,
+    daemon::client::DaemonClient,
 };
 
 // Simple password input function (former get_master_password)
@@ -67,14 +68,25 @@ fn get_master_password(
 }
 
 pub fn run_tui() -> io::Result<()> {
-    // If already unlocked, use the existing state
-    let (passwords, key, salt) = if STATE_MANAGER.is_unlocked() {
+    // First set up the terminal, this should happen quickly
+    let mut terminal = setup_terminal()?;
+
+    // Check if already unlocked, but don't wait too long for daemon
+    let start_unlocked = STATE_MANAGER.is_unlocked();
+
+    let (passwords, key, salt) = if start_unlocked {
         let state = STATE_MANAGER.get_state()?;
         (state.passwords, state.encryption_key, state.salt)
     } else {
-        // Otherwise, go through the unlock flow
-        let mut terminal = setup_terminal()?;
+        // Show loading message while we do the more intensive operations
+        terminal.draw(|f| {
+            f.render_widget(
+                ratatui::widgets::Paragraph::new("Loading password manager..."),
+                f.area()
+            );
+        })?;
 
+        // Implement actual unlock flow
         let result = (|| -> io::Result<(Vec<PasswordEntry>, [u8; 32], Vec<u8>)> {
             if std::path::Path::new(PASSWORD_FILE_PATH).exists() {
                 let mut file = File::open(PASSWORD_FILE_PATH)?;
@@ -115,14 +127,24 @@ pub fn run_tui() -> io::Result<()> {
                         io::Error::new(io::ErrorKind::Other, e)
                     )?;
 
-                    STATE_MANAGER.unlock(passwords.clone(), key, salt.to_vec())?;
-                    Ok((passwords, key, salt.to_vec()))
+                    STATE_MANAGER.unlock(passwords.clone(), key, salt.to_vec(), Some(&password))?;
+                    return Ok((passwords, key, salt.to_vec()));
                 } else {
                     loop {
                         let password = get_master_password(&mut terminal)?;
                         match load_passwords(PASSWORD_FILE_PATH, &password) {
                             Ok((passwords, key, salt)) => {
-                                STATE_MANAGER.unlock(passwords.clone(), key, salt.clone())?;
+                                // If daemon is running, also unlock it
+                                if DaemonClient::is_running() {
+                                    let _ = DaemonClient::unlock(&password);
+                                }
+
+                                STATE_MANAGER.unlock(
+                                    passwords.clone(),
+                                    key,
+                                    salt.clone(),
+                                    Some(&password)
+                                )?;
                                 return Ok((passwords, key, salt));
                             }
                             Err(e) => {
@@ -176,8 +198,9 @@ pub fn run_tui() -> io::Result<()> {
         }
     };
 
+    // Continue with TUI startup...
+
     // Now run the TUI with the retrieved passwords
-    let mut terminal = setup_terminal()?;
     let mut app = App::new(passwords, key, salt);
     let mut events = EventHandler::new();
 

@@ -1,17 +1,25 @@
 #!/bin/bash
 
-set -e  # Exit immediately if a command exits with a non-zero status
+# Detect system architecture
+ARCH=$(uname -m)
 
-# Define variables
-PROJECT_DIR="$(pwd)"
-TARGET_BINARY="rsp"
-BUILD_DIR="target/release"
-TARGET_ARCH=${TARGET_ARCH:-x86_64-unknown-linux-gnu}
+# Validate architecture
+case "$ARCH" in
+    x86_64|aarch64|armv7l|i686)
+        echo "Building for detected architecture: $ARCH"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
 
+# Build using the default target (native system)
+cargo build --release
 
-# Build the Rust project in release mode
-echo "Building the Rust project..."
-cargo build --release --target $TARGET_ARCH
+echo "Build completed for $ARCH"
 
-echo "Build complete. Run './$BUILD_DIR/$TARGET_BINARY' to execute."
-cp "$BUILD_DIR/$TARGET_BINARY" "$(pwd)/"
+# copy the binary to the current directory
+cp target/release/rsp .
+
+echo "Binary copied to current directory"
