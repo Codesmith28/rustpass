@@ -67,7 +67,7 @@ pub fn handle_command(command: Command) -> io::Result<()> {
         Command::Tui => Ok(()), // This will be handled in main.rs
         Command::Invalid => {
             execute_help()?;
-            Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid command"))
+            Err(io::Error::new(io::ErrorKind::InvalidInput, ""))
         }
     }
 } 
