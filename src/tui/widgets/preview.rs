@@ -1,11 +1,10 @@
 use crate::tui::app::App;
-use ratatui::{
-    layout::Rect,
-    widgets::{Block, BorderType, Borders, Paragraph},
-    Frame,
-};
+use ratatui::{ layout::Rect, widgets::{ Block, BorderType, Borders, Paragraph, Clear }, Frame };
 
 pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
+    // Clear the area before rendering the preview
+    f.render_widget(Clear, area);
+
     let details = if let Some(selected) = app.selected_password() {
         format!(
             "Name: {}\nID: {}\nPassword: {}\nURL: {}\nNotes: {}",
@@ -20,16 +19,13 @@ pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let preview = Paragraph::new(details).block(
-        Block::default()
-            .borders(Borders::ALL)
-            .border_type(BorderType::Rounded)
-            .title(" Preview "),
+        Block::default().borders(Borders::ALL).border_type(BorderType::Rounded).title(" Preview ")
     );
 
     // Create a smaller area for the hint text below the preview
     let hint_area = Rect {
         x: area.x,
-        y: area.y + area.height - 3, 
+        y: area.y + area.height - 3,
         width: area.width,
         height: 3,
     };
@@ -46,11 +42,8 @@ pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(preview, preview_area);
     f.render_widget(
         Paragraph::new("Press Alt + H for help").block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded)
-                .title(" Help ")
+            Block::default().borders(Borders::ALL).border_type(BorderType::Rounded).title(" Help ")
         ),
-        hint_area,
+        hint_area
     );
 }

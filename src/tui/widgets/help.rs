@@ -1,12 +1,16 @@
 use ratatui::{
     layout::Rect,
-    style::{Color, Style},
-    widgets::{Block, BorderType, Borders, Paragraph},
+    style::{ Color, Style },
+    widgets::{ Block, BorderType, Borders, Paragraph, Clear },
     Frame,
 };
 
 pub fn render_help_panel(f: &mut Frame, area: Rect) {
-    let help_text = "\
+    // Clear the area before rendering the help panel
+    f.render_widget(Clear, area);
+
+    let help_text =
+        "\
 Keybindings:
 ────────────────
 ↑/↓         Navigate list
@@ -24,7 +28,7 @@ Tab         Multi-select current & move to next
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
             .title(" Help ")
-            .border_style(Style::default().fg(Color::Yellow)),
+            .border_style(Style::default().fg(Color::Yellow))
     );
 
     f.render_widget(help, area);

@@ -1,16 +1,19 @@
 use super::{
-    help::render_help_panel, layout::centered_rect, list::render_password_list,
-    modal::render_modal, notification::render_notification, preview::render_preview,
+    help::render_help_panel,
+    layout::centered_rect,
+    list::render_password_list,
+    modal::render_modal,
+    notification::render_notification,
+    preview::render_preview,
     search::render_search_box,
 };
 use crate::tui::app::App;
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    widgets::Clear,
-    Frame,
-};
+use ratatui::{ layout::{ Constraint, Direction, Layout }, widgets::Clear, Frame };
 
 pub fn render_ui(f: &mut Frame, app: &App) {
+    // Clear the entire screen first
+    f.render_widget(Clear, f.area());
+
     // Add minimal padding to the entire UI
     let padded_area = Layout::default()
         .direction(Direction::Vertical)
@@ -31,7 +34,7 @@ pub fn render_ui(f: &mut Frame, app: &App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3), // search box at the top
-            Constraint::Min(0),    // remaining area for passwords
+            Constraint::Min(0), // remaining area for passwords
         ])
         .split(main_chunks[0]);
 

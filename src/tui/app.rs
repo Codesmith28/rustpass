@@ -15,7 +15,6 @@ use arboard::Clipboard;
 
 use super::widgets::modal::{ ConfirmationType, InputType };
 
-
 // struct for the app:
 pub struct App {
     pub running: bool,
@@ -51,6 +50,11 @@ impl App {
 
     // update the search input:
     pub fn update_search(&mut self, c: char) {
+        // Prevent adding spaces at the beginning of the search string
+        if c == ' ' && self.search_input.is_empty() {
+            return;
+        }
+
         self.search_input.push(c);
         self.filter_passwords();
     }
