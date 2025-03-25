@@ -6,6 +6,11 @@ pub struct Metadata {
     pub url: Option<String>,
     pub notes: Option<String>,
 }
+impl Default for Metadata {
+    fn default() -> Self {
+        Self { url: None, notes: None }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PasswordEntry {
