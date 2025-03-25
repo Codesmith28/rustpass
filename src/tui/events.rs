@@ -1,7 +1,7 @@
 use crate::tui::app::App;
 use crate::tui::keybindings::{AppEvent, KeyBindings};
 use crate::utils::fuzzy_finder::fuzzy_match;
-use crate::models::data::PasswordEntry;
+use crate::models::structs::PasswordEntry;
 
 use crossterm::event::{self, KeyCode, KeyEvent};
 use ratatui::style::Color;
