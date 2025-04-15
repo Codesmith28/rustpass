@@ -8,6 +8,7 @@ ratatui = "0.29.0"                                 # Fork of `tui-rs`
 crossterm = "0.27"                                 # Terminal event handling
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"                                 # Required for JSON serialization/deserialization
+serde_with = { version = "2.3.2", features = ["base64"] }  # Helper for serializing complex types
 env_logger = "0.11.6"
 log = "0.4.25"
 chrono = "0.4.39"
@@ -25,6 +26,10 @@ dialoguer = "0.11.0"
 lazy_static = "1.4.0"
 rpassword = "7.3.1"
 uuid = { version = "1.6.1", features = ["v4"] }
+interprocess = "1.2"
+dirs = "5.0"
+daemonize = "0.5"  # Optional, for proper daemonization
+sha2 = "0.10.8"
 
 [[bin]]
 name = "rsp"
