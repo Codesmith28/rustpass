@@ -1,21 +1,20 @@
+use crate::daemon::ipc::{load_daemon_state, save_daemon_state, DaemonState};
 use crate::data::data::load_passwords;
 use crate::PASSWORD_FILE_PATH;
-use crate::daemon::ipc::{ DaemonState, save_daemon_state, load_daemon_state };
-use crate::daemon::session::{ SessionStatus, monitor_session_changes };
 
-use log::{ info, error };
-use std::io;
-use std::sync::{ Arc, Mutex };
-use std::thread;
-use std::time::Duration;
-use interprocess::local_socket::{ LocalSocketListener, LocalSocketStream };
-use serde_json::{ from_reader, to_writer };
-use std::fs;
-use std::path::PathBuf;
 use daemonize;
 use env_logger;
+use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
+use log::{error, info};
+use serde_json::{from_reader, to_writer};
+use std::fs;
+use std::io;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
 
-use super::ipc::{ DaemonCommand, DaemonResponse, get_socket_path };
+use super::ipc::{get_socket_path, DaemonCommand, DaemonResponse};
 
 pub struct DaemonService {
     state: Arc<Mutex<DaemonState>>,
@@ -60,33 +59,6 @@ impl DaemonService {
             }
         };
 
-        // Set up session monitoring
-        info!("Setting up session monitoring");
-        let state_clone = self.state.clone();
-        monitor_session_changes(move |status| {
-            match status {
-                SessionStatus::Active => {
-                    info!("User session is active - maintaining current lock state");
-                    // Don't auto-unlock on session active, just keep current state
-                }
-                SessionStatus::Inactive => {
-                    info!("User session is inactive - locking daemon state");
-                    let mut state = state_clone.lock().unwrap();
-
-                    // Only lock if currently unlocked
-                    if state.unlocked {
-                        state.unlocked = false;
-                        state.encryption_key = None;
-                        state.salt = None;
-                        match save_daemon_state(&state) {
-                            Ok(_) => info!("Saved locked state to disk"),
-                            Err(e) => error!("Failed to save state: {}", e),
-                        }
-                    }
-                }
-            }
-        });
-
         let running_clone = self.running.clone();
 
         // Accept connections
@@ -116,7 +88,7 @@ impl DaemonService {
     fn handle_connection(
         mut conn: LocalSocketStream,
         state: Arc<Mutex<DaemonState>>,
-        running: Arc<Mutex<bool>>
+        running: Arc<Mutex<bool>>,
     ) {
         let cmd: Result<DaemonCommand, _> = from_reader(&mut conn);
 
@@ -162,7 +134,7 @@ impl DaemonService {
                 save_daemon_state(&state)?;
                 Ok(())
             }
-            Err(e) => { Err(io::Error::new(io::ErrorKind::InvalidInput, e)) }
+            Err(e) => Err(io::Error::new(io::ErrorKind::InvalidInput, e)),
         }
     }
 
@@ -174,22 +146,23 @@ impl DaemonService {
         use std::fs::OpenOptions;
 
         // Create system directories if they don't exist
-        let log_dir = dirs
-            ::data_dir()
+        let log_dir = dirs::data_dir()
             .unwrap_or_else(|| PathBuf::from("/tmp"))
             .join("rustpass");
         fs::create_dir_all(&log_dir)?;
 
         // Setup log file
         let log_file = log_dir.join("daemon.log");
-        let stdout = OpenOptions::new().create(true).append(true).open(&log_file)?;
+        let stdout = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_file)?;
 
         // Setup PID file
         let pid_file = log_dir.join("daemon.pid");
 
         // Configure the daemon
-        let daemonize = daemonize::Daemonize
-            ::new()
+        let daemonize = daemonize::Daemonize::new()
             .pid_file(pid_file)
             .chown_pid_file(true)
             .working_directory(log_dir)
@@ -200,8 +173,7 @@ impl DaemonService {
         match daemonize.start() {
             Ok(_) => {
                 // Initialize logging
-                env_logger::Builder
-                    ::from_env(env_logger::Env::default())
+                env_logger::Builder::from_env(env_logger::Env::default())
                     .filter_level(log::LevelFilter::Info)
                     .format_timestamp_secs()
                     .init();
