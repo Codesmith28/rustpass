@@ -1,5 +1,9 @@
 use crate::tui::app::App;
-use ratatui::{ layout::Rect, widgets::{ Block, BorderType, Borders, Paragraph, Clear }, Frame };
+use ratatui::{
+    layout::Rect,
+    widgets::{Block, BorderType, Borders, Clear, Paragraph},
+    Frame,
+};
 
 pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
     // Clear the area before rendering the preview
@@ -19,7 +23,10 @@ pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let preview = Paragraph::new(details).block(
-        Block::default().borders(Borders::ALL).border_type(BorderType::Rounded).title(" Preview ")
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .title(" Preview "),
     );
 
     // Create a smaller area for the hint text below the preview
@@ -42,8 +49,11 @@ pub fn render_preview(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(preview, preview_area);
     f.render_widget(
         Paragraph::new("Press Alt + H for help").block(
-            Block::default().borders(Borders::ALL).border_type(BorderType::Rounded).title(" Help ")
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
+                .title(" Help "),
         ),
-        hint_area
+        hint_area,
     );
 }
