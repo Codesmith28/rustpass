@@ -58,7 +58,6 @@ pub fn codesmith28(string: &str) -> String {
     x
 }
 
-
 // Encrypt data
 pub fn encrypt_data(data: &[u8], key: &[u8; 32]) -> EncryptedDataResult {
     let cipher = Aes256Gcm::new(key.into());

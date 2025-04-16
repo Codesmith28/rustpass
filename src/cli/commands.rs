@@ -1,6 +1,6 @@
 use crate::data::data::{load_passwords, save_passwords};
 use crate::models::structs::{Metadata, PasswordEntry};
-use crate::state::key::save_key;
+use crate::state::key::{load_key, save_key};
 use crate::state::manager::STATE_MANAGER;
 use crate::PASSWORD_FILE_PATH;
 use rpassword::read_password;
@@ -62,8 +62,21 @@ pub fn execute_add(name: String, password: String) -> io::Result<()> {
     )
     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
-    // Update the state
-    STATE_MANAGER.unlock(state.passwords, state.encryption_key, state.salt, None)?;
+    // Load cached password to avoid prompting
+    let cached_password = load_key().map_err(|e| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            format!("Failed to load key: {}. Please unlock again.", e),
+        )
+    })?;
+
+    // Update the state without prompting
+    STATE_MANAGER.unlock(
+        state.passwords,
+        state.encryption_key,
+        state.salt,
+        Some(&cached_password),
+    )?;
 
     println!("Password added successfully");
     Ok(())
@@ -111,8 +124,21 @@ pub fn execute_remove(name: String) -> io::Result<()> {
     )
     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
-    // Update the state
-    STATE_MANAGER.unlock(state.passwords, state.encryption_key, state.salt, None)?;
+    // Load cached password to avoid prompting
+    let cached_password = load_key().map_err(|e| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            format!("Failed to load key: {}. Please unlock again.", e),
+        )
+    })?;
+
+    // Update the state without prompting
+    STATE_MANAGER.unlock(
+        state.passwords,
+        state.encryption_key,
+        state.salt,
+        Some(&cached_password),
+    )?;
 
     println!("Password removed successfully");
     Ok(())
@@ -123,7 +149,7 @@ pub fn execute_help() -> io::Result<()> {
     println!("Usage: rsp <command> [options]");
     println!("");
     println!("Commands:");
-    println!("  add <name> <username> <password>   Add a new password entry");
+    println!("  add <name> <password>              Add a new password entry");
     println!("  list                               List all password entries");
     println!("  remove <name>                      Remove a password entry");
     println!("  unlock [password]                  Unlock the password database");

@@ -26,7 +26,7 @@ pub fn get_key_file_path() -> PathBuf {
 
 // Derive fixed key for encryption (same as state.enc)
 fn derive_fixed_key() -> [u8; 32] {
-    let mut hasher = Sha256::new();
+    let mut hasher = Sha256::default();
     hasher.update("rustpass_state_key_v1");
     let result = hasher.finalize();
     let mut key = [0u8; 32];
